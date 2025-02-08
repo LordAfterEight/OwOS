@@ -1,9 +1,7 @@
 [package]
 name = "owos"
 version = "0.1.0"
-edition = "2021"
-
-[dependencies]
+edition = "2018"
 
 [profile.dev]
 panic = "abort"
@@ -13,3 +11,6 @@ panic = "abort"
 
 [build]
 target = "x86_64-owos.json"
+
+[dependencies]
+bootloader = "0.9"
