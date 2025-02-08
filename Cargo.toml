@@ -1,0 +1,15 @@
+[package]
+name = "owos"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+
+[build]
+target = "x86_64-owos.json"
