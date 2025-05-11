@@ -11,3 +11,9 @@ panic = "abort"
 
 [build]
 target = "x86_64-owos.json"
+
+[unstable]
+build-std = ["core", "compiler_builtins"]
+
+[dependencies]
+bootloader = "0.9"
