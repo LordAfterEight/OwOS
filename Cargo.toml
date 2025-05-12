@@ -3,12 +3,6 @@ name = "owos"
 version = "0.1.0"
 edition = "2021"
 
-[profile.dev]
-panic = "abort"
-
-[profile.release]
-panic = "abort"
-
 [build]
 target = "x86_64-owos.json"
 
@@ -17,9 +11,17 @@ build-std = ["core", "compiler_builtins"]
 
 [dependencies]
 bootloader = "0.9"
+pic8259 = "0.11.0"
 spin = "0.10.0"
 volatile = "0.2.6"
+x86_64 = "0.15.2"
 
 [dependencies.lazy_static]
 version = "1.5"
 features = ["spin_no_std"]
+
+[package.metadata.bootimage]
+test-args = ["-device", "isa-debug-exit,iobase=0xf4,iosize=0x04"]
+
+[target.'cfg(target_os = "none")']
+runner = "bootimage runner"
