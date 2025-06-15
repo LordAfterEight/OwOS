@@ -7,15 +7,14 @@ edition = "2021"
 target = "x86_64-owos.json"
 
 [unstable]
-build-std = ["core", "compiler_builtins"]
+build-std = "alloc"
 
 [dependencies]
-bootloader = "0.9"
-pic8259 = "0.11.0"
+pc-keyboard = "0.8.0"
 spin = "0.10.0"
+time = { version = "0.3.41", default-features = false }
 uart_16550 = "0.3.2"
 volatile = "0.2.6"
-x86_64 = "0.15.2"
 
 [dependencies.lazy_static]
 version = "1.5"
@@ -26,3 +25,9 @@ test-args = ["-device", "isa-debug-exit,iobase=0xf4,iosize=0x04"]
 
 [target.'cfg(target_os = "none")']
 runner = "bootimage runner"
+
+[target."x86_64-owos".dependencies]
+bootloader = "0.9"
+x86_64 = "0.15.2"
+pic8259 = "0.11.0"
+

@@ -7,16 +7,17 @@ mod serial;
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    println!("OwOS => Hello World!");
+    println!("OwOS => Hello! :3");
 
     owos::init();
+    print!("OwOS <= ");
 
-    loop {}
+    owos::halt_loop();
 }
 
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
-    loop{}
+    owos::halt_loop();
 }

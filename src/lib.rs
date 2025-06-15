@@ -6,6 +6,7 @@
 pub mod serial;
 pub mod vga_buffer;
 pub mod interrupts;
+pub mod gdt;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u32)]
@@ -16,6 +17,9 @@ pub enum QemuExitCode {
 
 pub fn init() {
     interrupts::init_idt();
+    gdt::init();
+    unsafe { interrupts::PICS.lock().initialize() };
+    x86_64::instructions::interrupts::enable();
 }
 
 pub fn exit_qemu(exit_code: QemuExitCode) {
@@ -24,5 +28,11 @@ pub fn exit_qemu(exit_code: QemuExitCode) {
     unsafe {
         let mut port = Port::new(0xf4);
         port.write(exit_code as u32);
+    }
+}
+
+pub fn halt_loop() -> ! {
+    loop {
+        x86_64::instructions::hlt();
     }
 }
