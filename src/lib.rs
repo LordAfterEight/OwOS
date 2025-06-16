@@ -7,6 +7,7 @@ pub mod serial;
 pub mod vga_buffer;
 pub mod interrupts;
 pub mod gdt;
+pub mod memory;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u32)]
@@ -34,5 +35,34 @@ pub fn exit_qemu(exit_code: QemuExitCode) {
 pub fn halt_loop() -> ! {
     loop {
         x86_64::instructions::hlt();
+    }
+}
+
+
+pub struct InputBuffer {
+    pub content: [char;17],
+    index: usize
+}
+
+impl InputBuffer {
+    pub fn init(&self) -> InputBuffer {
+        let return_value = InputBuffer {
+            content: [' ';17],
+            index: 0
+        };
+        return return_value
+    }
+
+    pub fn write_into(&mut self, content: char) {
+        self.content[self.index] = content;
+        self.increase_index();
+    }
+
+    fn increase_index(&mut self) {
+        if self.index < 16 {
+            self.index += 1;
+        } else {
+            self.index = 0;
+        }
     }
 }

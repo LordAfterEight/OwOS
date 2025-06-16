@@ -27,7 +27,7 @@ test-args = ["-device", "isa-debug-exit,iobase=0xf4,iosize=0x04"]
 runner = "bootimage runner"
 
 [target."x86_64-owos".dependencies]
-bootloader = "0.9"
+bootloader = { version = "0.9", features = ["map_physical_memory"]}
 x86_64 = "0.15.2"
 pic8259 = "0.11.0"
 
