@@ -23,7 +23,7 @@ fn memory_check(boot_info: &'static BootInfo) -> ! {
     use owos::memory::active_level_4_table;
     use x86_64::{structures::paging::{Page, Translate}, VirtAddr};
 
-    println!("OwOS => Hello! :3");
+    println!("OwOS => Welcome to OwOS v0.1.0 :3");
 
     owos::init();
 
