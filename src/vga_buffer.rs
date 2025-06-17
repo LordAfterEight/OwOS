@@ -1,8 +1,15 @@
 use volatile::Volatile;
 use core::fmt;
+use core::fmt::Arguments;
 use lazy_static::lazy_static;
 use spin::Mutex;
-use crate::print;
+use crate::string;
+
+pub mod __export {
+    pub use core::format_args;
+    pub use core::hint::must_use;
+}
+
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -58,10 +65,7 @@ pub struct Writer {
     buffer: &'static mut Buffer,
 }
 
-pub struct InputBuffer {
-    content: [u8;17],
-    content_index: usize
-}
+
 
 
 impl Writer {
@@ -80,7 +84,7 @@ impl Writer {
             b'`' => {
                 let blank = ScreenChar {
                     ascii_character: b' ',
-                    color_code: ColorCode::new(Color::Black, Color::Red),
+                    color_code: ColorCode::new(Color::Black, Color::LightRed),
                 };
                 self.column_position -= 1;
                 self.buffer.chars[BUFFER_HEIGHT - 1][self.column_position].write(blank);
@@ -176,6 +180,17 @@ macro_rules! println {
     ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
 }
 
+
+#[macro_export]
+macro_rules! format {
+    ($($arg:tt)*) => {
+        $crate::vga_buffer::__export::must_use({
+            let res = crate::vga_buffer::format($crate::vga_buffer::__export::format_args!($($arg)*));
+            &(res as str)
+        })
+    }
+}
+
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
@@ -184,4 +199,18 @@ pub fn _print(args: fmt::Arguments) {
     interrupts::without_interrupts(|| {
         WRITER.lock().write_fmt(args).unwrap();
     });
+}
+
+#[inline]
+pub fn format(args: Arguments<'_>) -> string::String {
+    fn format_inner(args: Arguments<'_>) -> string::String {
+        let capacity = args.estimated_capacity();
+        let mut output = string::String::with_capacity(capacity);
+        output
+            .write_fmt(args)
+            .expect("a formatting trait implementation returned an error when the underlying stream did not");
+        output
+    }
+
+    args.as_str().map_or_else(|| format_inner(args), core::borrow::ToOwned::to_owned)
 }

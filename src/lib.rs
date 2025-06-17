@@ -1,13 +1,33 @@
 #![feature(abi_x86_interrupt)]
 #![no_std]
 #![cfg_attr(test, no_main)]
+#![allow(internal_features)]
 #![feature(custom_test_frameworks)]
+#![feature(hint_must_use)]
+#![feature(fmt_internals)]
+#![feature(allocator_api)]
+#![feature(const_eval_select)]
+#![feature(core_intrinsics)]
+#![feature(rustc_attrs)]
+#![feature(ptr_internals)]
+#![feature(trusted_len)]
+#![feature(slice_range)]
+#![feature(extend_one_unchecked)]
+#![feature(extend_one)]
+#![feature(deref_pure_trait)]
+#![feature(sized_type_properties)]
+#![feature(min_specialization)]
+#![feature(ptr_alignment_type)]
+#![feature(temporary_niche_types)]
 
 pub mod serial;
 pub mod vga_buffer;
 pub mod interrupts;
 pub mod gdt;
 pub mod memory;
+pub mod string;
+pub mod vec;
+pub mod raw_vec;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u32)]

@@ -8,22 +8,22 @@ mod serial;
 
 entry_point!(memory_check);
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn kernel_main() -> ! {
 
-    print!("OwOS <= # ");
+    print!("\n OwOS <= # ");
 
     owos::halt_loop();
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn memory_check(boot_info: &'static BootInfo) -> ! {
     use owos::memory;
     use owos::memory::BootInfoFrameAllocator;
     use owos::memory::active_level_4_table;
     use x86_64::{structures::paging::{Page, Translate}, VirtAddr};
 
-    println!("OwOS => Welcome to OwOS v{} :3\n", env!("CARGO_PKG_VERSION"));
+    println!("^ [i] OwOS => Welcome to OwOS v{} :3\n ", env!("CARGO_PKG_VERSION"));
     serial_println!("Booted kernel");
 
     owos::init();
@@ -51,17 +51,19 @@ fn memory_check(boot_info: &'static BootInfo) -> ! {
         let virt = VirtAddr::new(address);
         // new: use the `mapper.translate_addr` method
         let phys = mapper.translate_addr(virt);
-        println!("virt: {:?}\nphys: {:?}\n\n", virt, phys);
+        println!(" virt: {:?}\n phys: {:?}\n\n ", virt, phys);
     }
 
-    println!("\n[i] OwOS => Memory check done and successful :3\n\n");
-    serial_println!("Memory checks successful");
-    kernel_main();
+    unsafe {
+        println!("\n [i] OwOS => Memory check done and successful :3\n ");
+        serial_println!("\nMemory checks successful");
+        kernel_main();
+    }
 }
 
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    println!("{}", info);
-    owos::halt_loop();
+    println!(" [X] Kernel@OwOS => {:?}\n [i] OwOS => Press Enter", info);
+    owos::halt_loop()
 }

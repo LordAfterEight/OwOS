@@ -1,8 +1,10 @@
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
 use crate::println;
 use crate::gdt;
+use crate::memory;
 use crate::print;
 use crate::serial_println;
+use crate::format;
 use spin;
 use pic8259::ChainedPics;
 use lazy_static::lazy_static;
@@ -79,17 +81,16 @@ extern "x86-interrupt" fn page_fault_handler(
 ) {
     use x86_64::registers::control::Cr2;
 
-    println!("EXCEPTION: PAGE FAULT");
-    println!("Accessed Address: {:?}", Cr2::read());
-    println!("Error Code: {:?}", error_code);
-    println!("{:#?}", stack_frame);
-    halt_loop();
+    println!(" [X] OwOS => EXCEPTION: PAGE FAULT");
+    println!("  -> OwOS => Accessed Address: {:?}", Cr2::read());
+    println!("  -> OwOS => Error Code: {:?}", error_code);
+    println!(" {:#?}\n ", stack_frame);
 }
 
 extern "x86-interrupt" fn keyboard_interrupt_handler(
     _stack_frame: InterruptStackFrame)
 {
-    use pc_keyboard::{layouts, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
+    use pc_keyboard::{layouts, HandleControl, Keyboard, ScancodeSet1};
     use spin::Mutex;
     use x86_64::instructions::port::Port;
 
@@ -105,35 +106,12 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(
     let scancode: u8 = unsafe { port.read() };
     if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
         if let Some(key) = keyboard.process_keyevent(key_event) {
-            match key {
-                DecodedKey::Unicode(character) => match character {
-                    '\n' => {
-                        match character {
-                            _ => println!("\n[!] OwOS => Invalid input: {}", character)
-                        }
-                        print!("\nOwOs <= # ")
-                    },
-                    'h' => {
-                        print!("{}\n", character);
-                        print!("{}{}{}{}{}",
-                            "Commands:\n",
-                            "  h : Show this help message\n",
-                            "  q : Enter halt loop\n",
-                            "More commands will be supported soon! :3\n",
-                            "\nOwOS <= # "
-                        )
-                    },
-                    'q' => {
-                        print!("^System stopped :3");
-                        serial_println!("Received system stop command");
-                        halt_loop();
-                    }
-                    _ => {
-                        print!("\n[!] OwOS => Invalid input: {}", character);
-                        print!("\nOwOS <= # ");
-                    }
-                },
-                DecodedKey::RawKey(key) => {},
+            let mut in_buffer = crate::memory::InputBuffer {
+                content: [' ';17],
+                index: 0
+            };
+            unsafe {
+                handle_keyboard_input(key, &raw mut input_buffer);
             }
         }
     }
@@ -141,5 +119,80 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(
     unsafe {
         PICS.lock()
             .notify_end_of_interrupt(InterruptIndex::Keyboard.as_u8());
+    }
+}
+
+static mut input_buffer: memory::InputBuffer = memory::InputBuffer {
+    content: [' ';17],
+    index: 0
+};
+
+fn handle_keyboard_input(key: pc_keyboard::DecodedKey, buffer: *mut crate::memory::InputBuffer) {
+    match key {
+        pc_keyboard::DecodedKey::Unicode(character) => match character {
+            '\n' => unsafe {
+                (*buffer).index = 0;
+                unsafe {
+                    let x: &str = "";
+                    for c in 0..(*buffer).content.len() {
+                        x = format!("{}{}", x, c);
+                    }
+                    match x {
+                        "help" => {
+                            print!("{}\n", character);
+                            print!("{}{}{}{}",
+                                "Commands:\n",
+                                "  h : Show this help message\n",
+                                "  q : Enter halt loop\n",
+                                "More commands will be supported soon! :3\n"
+                            )
+                        },
+                        "quit" => {
+                            print!("^System stopped :3");
+                            serial_println!("Received system stop command");
+                            halt_loop();
+                        }
+                        _ => {
+                            print!("{}\n[!] OwOS => Invalid input: {}\n", character, character);
+                        }
+                    }
+                }
+                (*buffer).index = 0;
+                print!("\n OwOS <= # ");
+            }
+            '^' => print!("^ OwOS <= # "),
+            '`' => print!("`"),
+            _ => unsafe {
+                print!("{}", character);
+                (*buffer).insert(character);
+            }
+            /*
+            '\n' => {
+                match character {
+                    _ => println!("\n[!] OwOS => Invalid input: {}", character)
+                }
+                print!("\nOwOs <= # ")
+            },
+            'h' => {
+                print!("{}\n", character);
+                print!("{}{}{}{}{}",
+                    "Commands:\n",
+                    "  h : Show this help message\n",
+                    "  q : Enter halt loop\n",
+                    "More commands will be supported soon! :3\n",
+                    "\nOwOS <= # "
+                )
+            },
+            'q' => {
+                print!("^System stopped :3");
+                serial_println!("Received system stop command");
+                halt_loop();
+            }
+            _ => {
+                print!("{}\n[!] OwOS => Invalid input: {}\n", character, character);
+                print!("\nOwOS <= # ");
+            }*/
+        },
+        pc_keyboard::DecodedKey::RawKey(key) => {},
     }
 }
