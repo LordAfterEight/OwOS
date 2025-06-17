@@ -23,7 +23,7 @@ fn memory_check(boot_info: &'static BootInfo) -> ! {
     use owos::memory::active_level_4_table;
     use x86_64::{structures::paging::{Page, Translate}, VirtAddr};
 
-    println!("OwOS => Welcome to OwOS v0.1.0 :3");
+    println!("OwOS => Welcome to OwOS v{} :3\n", env!("CARGO_PKG_VERSION"));
 
     owos::init();
 
@@ -33,21 +33,6 @@ fn memory_check(boot_info: &'static BootInfo) -> ! {
 
     let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
     let mut mapper = unsafe { memory::init(phys_mem_offset) };
-    let mut frame_allocator = memory::EmptyFrameAllocator;
-
-    let page = Page::containing_address(VirtAddr::new(0));
-    memory::create_example_mapping(page, &mut mapper, &mut frame_allocator);
-
-    let page_ptr: *mut u64 = page.start_address().as_mut_ptr();
-    unsafe { page_ptr.offset(400).write_volatile(0x_f021_f077_f065_f04e)};
-
-
-    let l4_table = unsafe { active_level_4_table(phys_mem_offset) };
-    for (i, entry) in l4_table.iter().enumerate() {
-        if !entry.is_unused() {
-            println!("L4 Entry {}: {:?}", i, entry);
-        }
-    }
 
 
     let addresses = [
@@ -65,7 +50,7 @@ fn memory_check(boot_info: &'static BootInfo) -> ! {
         let virt = VirtAddr::new(address);
         // new: use the `mapper.translate_addr` method
         let phys = mapper.translate_addr(virt);
-        println!("{:?} -> {:?}", virt, phys);
+        println!("virt: {:?}\nphys: {:?}\n\n", virt, phys);
     }
 
     println!("\n[i] OwOS => Memory check done and successful :3\n\n");
