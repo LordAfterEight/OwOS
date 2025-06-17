@@ -2,6 +2,7 @@ use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
 use crate::println;
 use crate::gdt;
 use crate::print;
+use crate::serial_println;
 use spin;
 use pic8259::ChainedPics;
 use lazy_static::lazy_static;
@@ -124,6 +125,7 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(
                     },
                     'q' => {
                         print!("^System stopped :3");
+                        serial_println!("Received system stop command");
                         halt_loop();
                     }
                     _ => {

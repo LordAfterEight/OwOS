@@ -24,6 +24,7 @@ fn memory_check(boot_info: &'static BootInfo) -> ! {
     use x86_64::{structures::paging::{Page, Translate}, VirtAddr};
 
     println!("OwOS => Welcome to OwOS v{} :3\n", env!("CARGO_PKG_VERSION"));
+    serial_println!("Booted kernel");
 
     owos::init();
 
@@ -54,6 +55,7 @@ fn memory_check(boot_info: &'static BootInfo) -> ! {
     }
 
     println!("\n[i] OwOS => Memory check done and successful :3\n\n");
+    serial_println!("Memory checks successful");
     kernel_main();
 }
 

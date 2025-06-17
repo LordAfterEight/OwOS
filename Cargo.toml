@@ -3,12 +3,6 @@ name = "owos"
 version = "0.1.1"
 edition = "2021"
 
-[build]
-target = "x86_64-owos.json"
-
-[unstable]
-build-std = "alloc"
-
 [dependencies]
 pc-keyboard = "0.8.0"
 spin = "0.10.0"
