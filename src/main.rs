@@ -1,8 +1,11 @@
 #![no_std]
 #![no_main]
 
+extern crate alloc;
+
 use core::panic::PanicInfo;
 use bootloader::{BootInfo, entry_point};
+use alloc::boxed::Box;
 mod vga_buffer;
 mod serial;
 
@@ -18,52 +21,32 @@ fn kernel_main() -> ! {
 
 #[unsafe(no_mangle)]
 fn memory_check(boot_info: &'static BootInfo) -> ! {
-    use owos::memory;
-    use owos::memory::BootInfoFrameAllocator;
-    use owos::memory::active_level_4_table;
-    use x86_64::{structures::paging::{Page, Translate}, VirtAddr};
+    use owos::allocator;
+    use owos::memory::{self, BootInfoFrameAllocator};
 
     println!("^ [i] OwOS => Welcome to OwOS v{} :3\n ", env!("CARGO_PKG_VERSION"));
     serial_println!("Booted kernel");
 
     owos::init();
 
+    let phys_mem_offset = x86_64::VirtAddr::new(boot_info.physical_memory_offset);
+    let mut mapper = unsafe { memory::init(phys_mem_offset) };
     let mut frame_allocator = unsafe {
         BootInfoFrameAllocator::init(&boot_info.memory_map)
     };
 
-    let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
-    let mut mapper = unsafe { memory::init(phys_mem_offset) };
+    allocator::init_heap(&mut mapper, &mut frame_allocator)
+        .expect("heap initialization failed");
 
 
-    let addresses = [
-        // the identity-mapped vga buffer page
-        0xb8000,
-        // some code page
-        0x201008,
-        // some stack page
-        0x0100_0020_1a10,
-        // virtual address mapped to physical address 0
-        boot_info.physical_memory_offset,
-    ];
+    let x = Box::new(41);
 
-    for &address in &addresses {
-        let virt = VirtAddr::new(address);
-        // new: use the `mapper.translate_addr` method
-        let phys = mapper.translate_addr(virt);
-        println!(" virt: {:?}\n phys: {:?}\n\n ", virt, phys);
-    }
-
-    unsafe {
-        println!("\n [i] OwOS => Memory check done and successful :3\n ");
-        serial_println!("\nMemory checks successful");
-        kernel_main();
-    }
+    kernel_main();
 }
 
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    println!(" [X] Kernel@OwOS => {:?}\n [i] OwOS => Press Enter", info);
-    owos::halt_loop()
+    println!(" [X] Kernel@OwOS => {}", info);
+    kernel_main()
 }

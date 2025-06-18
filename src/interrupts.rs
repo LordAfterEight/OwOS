@@ -1,11 +1,15 @@
+extern crate alloc;
+
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
 use crate::println;
 use crate::gdt;
 use crate::memory;
 use crate::print;
 use crate::serial_println;
-use crate::format;
+//use crate::format;
 use spin;
+use core::iter::iter;
+use alloc::boxed::Box;
 use pic8259::ChainedPics;
 use lazy_static::lazy_static;
 use x86_64::structures::idt::PageFaultErrorCode;
@@ -134,9 +138,6 @@ fn handle_keyboard_input(key: pc_keyboard::DecodedKey, buffer: *mut crate::memor
                 (*buffer).index = 0;
                 unsafe {
                     let x: &str = "";
-                    for c in 0..(*buffer).content.len() {
-                        x = format!("{}{}", x, c);
-                    }
                     match x {
                         "help" => {
                             print!("{}\n", character);
@@ -153,7 +154,7 @@ fn handle_keyboard_input(key: pc_keyboard::DecodedKey, buffer: *mut crate::memor
                             halt_loop();
                         }
                         _ => {
-                            print!("{}\n[!] OwOS => Invalid input: {}\n", character, character);
+                            print!("{}\n [!] OwOS => Invalid input: {}\n", character, character);
                         }
                     }
                 }

@@ -3,7 +3,6 @@
 #![cfg_attr(test, no_main)]
 #![allow(internal_features)]
 #![feature(custom_test_frameworks)]
-#![feature(hint_must_use)]
 #![feature(fmt_internals)]
 #![feature(allocator_api)]
 #![feature(const_eval_select)]
@@ -19,15 +18,23 @@
 #![feature(min_specialization)]
 #![feature(ptr_alignment_type)]
 #![feature(temporary_niche_types)]
+#![feature(nonnull_provenance)]
+#![feature(alloc_layout_extra)]
+#![feature(std_internals)]
+#![feature(slice_ptr_get)]
+#![feature(iter_macro)]
 
 pub mod serial;
 pub mod vga_buffer;
 pub mod interrupts;
 pub mod gdt;
 pub mod memory;
+pub mod allocator;
+/*
 pub mod string;
 pub mod vec;
 pub mod raw_vec;
+*/
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u32)]

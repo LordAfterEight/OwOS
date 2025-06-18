@@ -3,13 +3,15 @@ use core::fmt;
 use core::fmt::Arguments;
 use lazy_static::lazy_static;
 use spin::Mutex;
+/*
 use crate::string;
+
 
 pub mod __export {
     pub use core::format_args;
     pub use core::hint::must_use;
 }
-
+*/
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -180,17 +182,6 @@ macro_rules! println {
     ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
 }
 
-
-#[macro_export]
-macro_rules! format {
-    ($($arg:tt)*) => {
-        $crate::vga_buffer::__export::must_use({
-            let res = crate::vga_buffer::format($crate::vga_buffer::__export::format_args!($($arg)*));
-            &(res as str)
-        })
-    }
-}
-
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
@@ -199,6 +190,18 @@ pub fn _print(args: fmt::Arguments) {
     interrupts::without_interrupts(|| {
         WRITER.lock().write_fmt(args).unwrap();
     });
+}
+
+
+/*
+#[macro_export]
+macro_rules! format {
+    ($($arg:tt)*) => {
+        $crate::vga_buffer::__export::must_use({
+            let res = crate::vga_buffer::format($crate::vga_buffer::__export::format_args!($($arg)*));
+            &(res as str)
+        })
+    }
 }
 
 #[inline]
@@ -214,3 +217,4 @@ pub fn format(args: Arguments<'_>) -> string::String {
 
     args.as_str().map_or_else(|| format_inner(args), core::borrow::ToOwned::to_owned)
 }
+*/

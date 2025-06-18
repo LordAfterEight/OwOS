@@ -4,7 +4,8 @@ use x86_64::{
     VirtAddr,
     structures::paging::{PhysFrame, Size4KiB, FrameAllocator}
 };
-use core::alloc::Layout;
+use core::alloc::{Layout, AllocError};
+use core::ptr::NonNull;
 use bootloader::bootinfo::MemoryMap;
 use bootloader::bootinfo::MemoryRegionType;
 use crate::serial_println;
@@ -147,72 +148,4 @@ impl InputBuffer {
         }
         self.index += 1;
     }
-}
-
-
-pub struct Global;
-
-unsafe extern "Rust" {
-    static __rust_no_alloc_shim_is_unstable: u8;
-
-    #[rustc_allocator]
-    #[rustc_nounwind]
-    fn __rust_alloc(size: usize, align: usize) -> *mut u8;
-
-    #[rustc_deallocator]
-    #[rustc_nounwind]
-    fn __rust_dealloc(ptr: *mut u8, size: usize, align: usize);
-
-    #[rustc_reallocator]
-    #[rustc_nounwind]
-    fn __rust_realloc(ptr: *mut u8, old_size: usize, align: usize, new_size: usize) -> *mut u8;
-
-    #[rustc_allocator_zeroed]
-    #[rustc_nounwind]
-    fn __rust_alloc_zeroed(size: usize, align: usize) -> *mut u8;
-}
-
-pub unsafe fn realloc(ptr: *mut u8, layout: Layout, new_size: usize) -> *mut u8 {
-    unsafe { __rust_realloc(ptr, layout.size(), layout.align(), new_size) }
-}
-
-pub unsafe fn dealloc(ptr: *mut u8, layout: Layout) {
-    unsafe { __rust_dealloc(ptr, layout.size(), layout.align()) }
-}
-
-pub unsafe fn alloc(layout: core::alloc::Layout) -> *mut u8 {
-    unsafe {
-        // Make sure we don't accidentally allow omitting the allocator shim in
-        // stable code until it is actually stabilized.
-        core::ptr::read_volatile(&__rust_no_alloc_shim_is_unstable);
-
-        __rust_alloc(layout.size(), layout.align())
-    }
-}
-
-
-unsafe extern "Rust" {
-    // This is the magic symbol to call the global alloc error handler. rustc generates
-    // it to call `__rg_oom` if there is a `#[alloc_error_handler]`, or to call the
-    // default implementations below (`__rdl_oom`) otherwise.
-    fn __rust_alloc_error_handler(size: usize, align: usize) -> !;
-}
-
-pub const fn handle_alloc_error(layout: Layout) -> ! {
-    const fn ct_error(_: Layout) -> ! {
-        panic!("allocation failed");
-    }
-
-    #[inline]
-    fn rt_error(layout: Layout) -> ! {
-        unsafe {
-            __rust_alloc_error_handler(layout.size(), layout.align());
-        }
-    }
-
-    {
-        core::intrinsics::const_eval_select((layout,), ct_error, rt_error)
-    }
-
-    ct_error(layout)
 }
