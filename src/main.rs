@@ -24,10 +24,10 @@ fn memory_check(boot_info: &'static BootInfo) -> ! {
     use owos::allocator;
     use owos::memory::{self, BootInfoFrameAllocator};
 
+    owos::init();
+
     println!("^ [i] OwOS => Welcome to OwOS v{} :3\n ", env!("CARGO_PKG_VERSION"));
     serial_println!("Booted kernel");
-
-    owos::init();
 
     let phys_mem_offset = x86_64::VirtAddr::new(boot_info.physical_memory_offset);
     let mut mapper = unsafe { memory::init(phys_mem_offset) };

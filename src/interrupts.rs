@@ -149,10 +149,11 @@ fn handle_keyboard_input(key: pc_keyboard::DecodedKey, buffer: *mut crate::memor
                     println!("\n [i] OwOS:LineBuffer => {}", input);*/
                     match input.trim_end_matches(' ') {
                         "help"  => {
-                            print!("\n{}{}{}{}",
+                            print!("\n{}{}{}{}{}",
                                 " Commands:\n",
-                                "   help : Show this help message\n",
-                                "   quit : Enter halt loop\n",
+                                "   help  : Show this help message\n",
+                                "   quit  : Enter halt loop\n",
+                                "   clear : Clear the screen\n",
                                 " More commands will be supported soon! :3\n"
                             )
                         },
@@ -161,8 +162,12 @@ fn handle_keyboard_input(key: pc_keyboard::DecodedKey, buffer: *mut crate::memor
                             serial_println!("Received system stop command");
                             halt_loop();
                         }
+                        "clear" => {
+                            print!("^");
+                        }
+                        "" => {},
                         _ => {
-                            //print!("\n [!] OwOS => Invalid input: {}\n", input);
+                            print!("\n [!] OwOS => Invalid command: {}\n", input);
                         }
                     }
                     for i in 0..(*buffer).content.len() {
