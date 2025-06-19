@@ -9,7 +9,7 @@ use core::ptr::NonNull;
 use bootloader::bootinfo::MemoryMap;
 use bootloader::bootinfo::MemoryRegionType;
 use crate::serial_println;
-use crate::println;
+use crate::{println, print};
 
 
 pub unsafe fn translate_addr(addr: VirtAddr, physical_memory_offset: VirtAddr)
@@ -150,4 +150,9 @@ impl InputBuffer {
         }
         self.index += 1;
     }
+}
+
+
+pub fn memcheck() {
+    print!("\n [i] OwOS:memcheck => Not yet implemented!");
 }

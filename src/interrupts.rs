@@ -15,6 +15,7 @@ use lazy_static::lazy_static;
 use x86_64::structures::idt::PageFaultErrorCode;
 use crate::halt_loop;
 use crate::InputBuffer;
+use bootloader::{entry_point, BootInfo};
 
 pub const PIC_1_OFFSET: u8 = 32;
 pub const PIC_2_OFFSET: u8 = PIC_1_OFFSET + 8;
@@ -149,11 +150,12 @@ fn handle_keyboard_input(key: pc_keyboard::DecodedKey, buffer: *mut crate::memor
                     println!("\n [i] OwOS:LineBuffer => {}", input);*/
                     match input.trim_end_matches(' ') {
                         "help"  => {
-                            print!("\n{}{}{}{}{}",
+                            print!("\n{}{}{}{}{}{}",
                                 " Commands:\n",
-                                "   help  : Show this help message\n",
-                                "   quit  : Enter halt loop\n",
-                                "   clear : Clear the screen\n",
+                                "  - help     : Show this help message\n",
+                                "  - quit     : Enter halt loop\n",
+                                "  - clear    : Clear the screen\n",
+                                "  - memcheck : Perform some memory tasks to check for faults\n",
                                 " More commands will be supported soon! :3\n"
                             )
                         },
@@ -161,10 +163,13 @@ fn handle_keyboard_input(key: pc_keyboard::DecodedKey, buffer: *mut crate::memor
                             print!("^ System stopped :3");
                             serial_println!("Received system stop command");
                             halt_loop();
-                        }
+                        },
                         "clear" => {
                             print!("^");
-                        }
+                        },
+                        "memcheck" => {
+                            memory::memcheck();
+                        },
                         "" => {},
                         _ => {
                             print!("\n [!] OwOS => Invalid command: {}\n", input);
