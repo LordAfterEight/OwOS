@@ -1,6 +1,5 @@
 use volatile::Volatile;
 use core::fmt;
-use core::fmt::Arguments;
 use lazy_static::lazy_static;
 use spin::Mutex;
 /*
@@ -64,7 +63,7 @@ impl ColorCode {
 pub struct Writer {
     row_position: usize,
     column_position: usize,
-    color_code: ColorCode,
+    _color_code: ColorCode,
     buffer: &'static mut Buffer,
 }
 
@@ -75,7 +74,7 @@ impl Writer {
     pub fn write_byte(&mut self, byte: u8) {
         match byte {
             b'^' => {
-                self.clear_screen(BUFFER_HEIGHT - 1);
+                self.clear_screen();
                 unsafe {
                     let character = ScreenChar {
                         ascii_character: b' ',
@@ -87,15 +86,61 @@ impl Writer {
             },
             b'\n' => self.new_line(),
             b'`' => {
-                unsafe {
-                    let blank = ScreenChar {
-                        ascii_character: b' ',
-                        color_code: ColorCode::new(Color::Black, Color::LightRed),
-                    };
-                    self.column_position -= 1;
-                    self.buffer.chars[BUFFER_HEIGHT - 1][self.column_position].write(blank);
-                }
+                let blank = ScreenChar {
+                    ascii_character: b' ',
+                    color_code: ColorCode::new(Color::Black, Color::LightRed),
+                };
+                self.column_position -= 1;
+                self.buffer.chars[BUFFER_HEIGHT - 1][self.column_position].write(blank);
             },
+            b'!' => {
+                if self.column_position >= BUFFER_WIDTH {
+                    self.new_line();
+                }
+                let row = BUFFER_HEIGHT - 1;
+                let col = self.column_position;
+                self.buffer.chars[row][col].write(ScreenChar {
+                    ascii_character: byte,
+                    color_code: ColorCode::new(Color::LightRed, Color::Black),
+                });
+                self.column_position += 1;
+            }
+            b'-' | b'\"' => {
+                if self.column_position >= BUFFER_WIDTH {
+                    self.new_line();
+                }
+                let row = BUFFER_HEIGHT - 1;
+                let col = self.column_position;
+                self.buffer.chars[row][col].write(ScreenChar {
+                    ascii_character: byte,
+                    color_code: ColorCode::new(Color::LightGreen, Color::Black),
+                });
+                self.column_position += 1;
+            }
+            b'#' => {
+                if self.column_position >= BUFFER_WIDTH {
+                    self.new_line();
+                }
+                let row = BUFFER_HEIGHT - 1;
+                let col = self.column_position;
+                self.buffer.chars[row][col].write(ScreenChar {
+                    ascii_character: byte,
+                    color_code: ColorCode::new(Color::LightGray, Color::Black),
+                });
+                self.column_position += 1;
+            }
+            b':' | b'1' | b'2' | b'3' | b'4' | b'5' | b'6' | b'7' | b'8' | b'9' | b'0' => {
+                if self.column_position >= BUFFER_WIDTH {
+                    self.new_line();
+                }
+                let row = BUFFER_HEIGHT - 1;
+                let col = self.column_position;
+                self.buffer.chars[row][col].write(ScreenChar {
+                    ascii_character: byte,
+                    color_code: ColorCode::new(Color::Pink, Color::Black),
+                });
+                self.column_position += 1;
+            }
             byte => {
                 if self.column_position >= BUFFER_WIDTH {
                     self.new_line();
@@ -133,7 +178,7 @@ impl Writer {
             }
         }
         self.clear_row(BUFFER_HEIGHT -1);
-        self.column_position = 0;
+        self.column_position = 1;
         self.row_position = 0;
     }
 
@@ -149,7 +194,7 @@ impl Writer {
         }
     }
 
-    pub fn clear_screen(&mut self, row: usize) {
+    pub fn clear_screen(&mut self) {
         unsafe {
             let blank = ScreenChar {
                 ascii_character: b' ',
@@ -176,7 +221,7 @@ lazy_static!{
     pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
         row_position: 0,
         column_position: 0,
-        color_code: unsafe {COLORS},
+        _color_code: unsafe {COLORS},
         buffer: unsafe {&mut *(0xb8000 as *mut Buffer)},
     });
 }
@@ -199,9 +244,7 @@ pub fn _print(args: fmt::Arguments) {
     use x86_64::instructions::interrupts;
 
     interrupts::without_interrupts(|| {
-        unsafe {
-            WRITER.lock().write_fmt(args).unwrap();
-        }
+        WRITER.lock().write_fmt(args).unwrap();
     });
 }
 

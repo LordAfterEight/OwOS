@@ -8,7 +8,7 @@ use core::alloc::{Layout, AllocError};
 use core::ptr::NonNull;
 use bootloader::bootinfo::MemoryMap;
 use bootloader::bootinfo::MemoryRegionType;
-use crate::serial_println;
+use crate::serial_print;
 use crate::{println, print};
 
 
@@ -120,8 +120,10 @@ pub unsafe fn raw_write(address: u16, value: u8) {
 
 pub unsafe fn raw_read(address: u16) -> u8 {
     let ptr = address as *mut u16;
-    let x = *ptr as u8;
-    return x
+    unsafe {
+        let x = *ptr as u8;
+        return x
+    }
 }
 
 pub static mut INPUT_BUFFER: [u8;17] = [0u8;17];
@@ -135,24 +137,18 @@ impl InputBuffer {
     pub fn insert(&mut self, character: char) {
         self.content[self.index] = character;
         //println!(" [i] InputBuffer@OwOS => Saved value '{}' at index {}", self.content[self.index], self.index);
-        if self.index == 16 {
+        self.index += 1;
+        if self.index == 17 {
             self.index = 0;
-            println!(" [!] OwOS => Input buffer overflow!\n Reset index to 0 and cleared buffer\n ");
-        }
-        unsafe {
-            raw_write(0xF000, character as u8);
-            let x = char::from(raw_read(0xF000));
-            if x == character {
-                for i in 0..self.content.len() {
-                    serial_println!("V: {} | IDX: {}", self.content[i], i);
-                }
+            print!("\n[!] OwOS => Input buffer overflow!\nCleared buffer and reset index to 0\n\nOwOS <= # ");
+            for i in 0..self.content.len() {
+                self.content[i] = ' ';
             }
         }
-        self.index += 1;
     }
 }
 
 
 pub fn memcheck() {
-    print!("\n [i] OwOS:memcheck => Not yet implemented!");
+    print!("\n[i] OwOS:memcheck => Not yet implemented!\n");
 }

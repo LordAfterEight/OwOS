@@ -35,7 +35,7 @@ impl InterruptIndex {
         self as u8
     }
 
-    fn as_usize(self) -> usize {
+    fn _as_usize(self) -> usize {
         usize::from(self.as_u8())
     }
 }
@@ -100,126 +100,171 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(
     use spin::Mutex;
     use x86_64::instructions::port::Port;
 
-    lazy_static! {
-        static ref KEYBOARD: Mutex<Keyboard<layouts::De105Key, ScancodeSet1>> =
-            Mutex::new(Keyboard::new(ScancodeSet1::new(),
-                layouts::De105Key, HandleControl::Ignore)
-            );
-    }
-
-    let mut keyboard = KEYBOARD.lock();
-    let mut port = Port::new(0x60);
-    let scancode: u8 = unsafe { port.read() };
-    if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
-        if let Some(key) = keyboard.process_keyevent(key_event) {
-            let mut in_buffer = crate::memory::InputBuffer {
-                content: [' ';17],
-                index: 0
-            };
-            unsafe {
-                handle_keyboard_input(key, &raw mut input_buffer);
+    unsafe { match LOCALE {
+        "DE" => {
+            lazy_static! {
+                static ref KEYBOARD: Mutex<Keyboard<layouts::De105Key, ScancodeSet1>> =
+                    Mutex::new(Keyboard::new(ScancodeSet1::new(),
+                        layouts::De105Key, HandleControl::Ignore)
+                    );
             }
+            let mut keyboard = KEYBOARD.lock();
+            let mut port = Port::new(0x60);
+            let scancode: u8 = port.read();
+            if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
+                if let Some(key) = keyboard.process_keyevent(key_event) {
+                    let in_buffer = crate::memory::InputBuffer {
+                        content: [' ';17],
+                        index: 0
+                    };
+                    handle_keyboard_input(key, &raw mut INPUT_BUFFER);
+                }
+            }
+            PICS.lock()
+                .notify_end_of_interrupt(InterruptIndex::Keyboard.as_u8());
+        },
+        "US" => {
+            lazy_static! {
+                static ref KEYBOARD: Mutex<Keyboard<layouts::Us104Key, ScancodeSet1>> =
+                    Mutex::new(Keyboard::new(ScancodeSet1::new(),
+                        layouts::Us104Key, HandleControl::Ignore)
+                    );
+            }
+            let mut keyboard = KEYBOARD.lock();
+            let mut port = Port::new(0x60);
+            let scancode: u8 = port.read();
+            if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
+                if let Some(key) = keyboard.process_keyevent(key_event) {
+                    let in_buffer = crate::memory::InputBuffer {
+                        content: [' ';17],
+                        index: 0
+                    };
+                    handle_keyboard_input(key, &raw mut INPUT_BUFFER);
+                }
+            }
+            PICS.lock()
+                .notify_end_of_interrupt(InterruptIndex::Keyboard.as_u8());
+        },
+        _ => {
+            print!("\n[!] OwOS:locale => Invalid locale set! Defaulting to US layout\nOwOS <= # ");
+            lazy_static! {
+                static ref KEYBOARD: Mutex<Keyboard<layouts::Us104Key, ScancodeSet1>> =
+                    Mutex::new(Keyboard::new(ScancodeSet1::new(),
+                        layouts::Us104Key, HandleControl::Ignore)
+                    );
+            }
+            let mut keyboard = KEYBOARD.lock();
+            let mut port = Port::new(0x60);
+            let scancode: u8 = port.read();
+            if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
+                if let Some(key) = keyboard.process_keyevent(key_event) {
+                    let in_buffer = crate::memory::InputBuffer {
+                        content: [' ';17],
+                        index: 0
+                    };
+                    handle_keyboard_input(key, &raw mut INPUT_BUFFER);
+                }
+            }
+            PICS.lock()
+                .notify_end_of_interrupt(InterruptIndex::Keyboard.as_u8());
         }
-    }
-
-    unsafe {
-        PICS.lock()
-            .notify_end_of_interrupt(InterruptIndex::Keyboard.as_u8());
-    }
+    }}
 }
 
-static mut input_buffer: memory::InputBuffer = memory::InputBuffer {
+static mut LOCALE: &str = "US";
+
+static mut INPUT_BUFFER: memory::InputBuffer = memory::InputBuffer {
     content: [' ';17],
     index: 0
 };
 
 fn handle_keyboard_input(key: pc_keyboard::DecodedKey, buffer: *mut crate::memory::InputBuffer) {
     match key {
-        pc_keyboard::DecodedKey::Unicode(mut character) => match character {
+        pc_keyboard::DecodedKey::Unicode(character) => match character {
             '\n' => unsafe {
-                unsafe {
-                    //println!("\n [i] OwOS:InputBuffer => Building &str...");
-                    let mut buf = [0u8;17];
-                    let input: &str = chars_to_str(&(*buffer).content, &mut buf);
-                    /*for i in 0..(*buffer).content.len() {
-                        print!("\n [i] OwOS:LineBuffer => {}:{}",
-                            (*buffer).content[i],
-                            i
-                        );
-                    }
-                    println!("\n [i] OwOS:LineBuffer => {}", input);*/
-                    match input.trim_end_matches(' ') {
-                        "help"  => {
-                            print!("\n{}{}{}{}{}{}",
-                                " Commands:\n",
-                                "  - help     : Show this help message\n",
-                                "  - quit     : Enter halt loop\n",
-                                "  - clear    : Clear the screen\n",
-                                "  - memcheck : Perform some memory tasks to check for faults\n",
-                                " More commands will be supported soon! :3\n"
-                            )
-                        },
-                        "quit" => {
-                            print!("^ System stopped :3");
-                            serial_println!("Received system stop command");
-                            halt_loop();
-                        },
-                        "clear" => {
-                            print!("^");
-                        },
-                        "memcheck" => {
-                            memory::memcheck();
-                        },
-                        "" => {},
-                        _ => {
-                            print!("\n [!] OwOS => Invalid command: {}\n", input);
+                //println!("\n [i] OwOS:InputBuffer => Building &str...");
+                let mut buf = [0u8;17];
+                let input: &str = chars_to_str(&(*buffer).content, &mut buf);
+                /*for i in 0..(*buffer).content.len() {
+                    print!("\n [i] OwOS:LineBuffer => {}:{}",
+                        (*buffer).content[i],
+                        i
+                    );
+                }
+                println!("\n [i] OwOS:LineBuffer => {}", input);*/
+                match input.trim_end_matches(' ') {
+                    "help"  => {
+                        print!("\n{}{}{}{}{}{}{}{})\n{}{}",
+                            "Commands:\n",
+                            " - help     : Show this help message\n",
+                            " - quit     : Enter halt loop\n",
+                            " - clear    : Clears the screen\n",
+                            " - echo     : Echoes the following argument\n",
+                            " - memcheck : Performs some memory tasks to check for faults\n",
+                            " - locale   : Switches between qwerty and qwertz (Currently: ",
+                            LOCALE,
+                            " - os       : Shows OS information\n",
+                            "More commands will be supported soon! :3\n"
+                        )
+                    },
+                    "quit" => {
+                        print!("^System stopped :3");
+                        serial_println!("Received system stop command");
+                        halt_loop();
+                    },
+                    "clear" => {
+                        print!("^");
+                    },
+                    "memcheck" => {
+                        memory::memcheck();
+                    },
+                    "echo" => {
+                        print!("\n[i] OwOS:echo => Not yet implemented!\n");
+                    },
+                    "locale" => {
+                        match LOCALE {
+                            "DE" => {
+                                LOCALE = "US";
+                                print!("\n[i] OwOS:locale => Switched to {} keyboard layout", LOCALE);
+                            },
+                            "US" => {
+                                LOCALE = "DE";
+                                print!("\n[i] OwOS:locale => Switched to {} keyboard layout", LOCALE);
+                            },
+                            _ => print!("\n[!] OwOS:locale => Invalid locale!")
                         }
+                    },
+                    "os" => {
+                        print!("\n[i] OwOS:os => OwOS v{} | Build date: 19.06.2025 | Dev Build", env!("CARGO_PKG_VERSION"));
                     }
-                    for i in 0..(*buffer).content.len() {
-                        (*buffer).content[i] = ' ';
+                    "" => {},
+                    _ => {
+                        print!("\n[!] OwOS => Invalid command: {}\n", input);
                     }
+                }
+                for i in 0..(*buffer).content.len() {
+                    (*buffer).content[i] = ' ';
                 }
                 (*buffer).index = 0;
-                print!("\n OwOS <= # ");
+                print!("\nOwOS <= # ");
             }
-            '^' => print!("^ OwOS <= # "),
-            '`' => print!("`"),
+            '^' => print!("^OwOS <= # "),
+            '`' => {
+                unsafe { if (*buffer).index > 0 {
+                    print!("`");
+                    (*buffer).index -= 1;
+                    (*buffer).content[(*buffer).index] = ' ';
+                }}
+            },
             _ => unsafe {
-                if character == ' ' {
+                /*if character == ' ' {
                     character = '_';
-                }
+                }*/
                 print!("{}", character);
                 (*buffer).insert(character);
             }
         },
         pc_keyboard::DecodedKey::RawKey(key) => {},
-    }
-}
-
-use core::str;
-use crate::interrupts::alloc::string::ToString;
-
-/*fn build_str_from_chars<'a>(input: &[char; 17], output: &'a mut [u8]) -> &'a str {
-    let mut len = 0;
-    for (i, c) in input.iter().enumerate() {
-        if let Some(byte) = (*c).to_string().as_bytes().first() {
-            output[i] = *byte;
-            len += 1;
-        }
-    }
-    unsafe { core::str::from_utf8_unchecked(&output[..len]) }
-}*/
-
-fn build_str_from_chars(input: &[char; 17]) -> &'static str {
-    let mut len = 0;
-    unsafe {
-        for (i, c) in input.iter().enumerate() {
-            if let Some(byte) = (*c).to_string().as_bytes().first() {
-                crate::memory::INPUT_BUFFER[i] = *byte;
-                len += 1;
-            }
-        }
-        core::str::from_utf8_unchecked(&crate::memory::INPUT_BUFFER[..len])
     }
 }
 
