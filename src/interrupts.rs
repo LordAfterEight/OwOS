@@ -134,7 +134,7 @@ static mut input_buffer: memory::InputBuffer = memory::InputBuffer {
 
 fn handle_keyboard_input(key: pc_keyboard::DecodedKey, buffer: *mut crate::memory::InputBuffer) {
     match key {
-        pc_keyboard::DecodedKey::Unicode(character) => match character {
+        pc_keyboard::DecodedKey::Unicode(mut character) => match character {
             '\n' => unsafe {
                 unsafe {
                     println!("\n [i] OwOS:InputBuffer => Building &str...");
@@ -176,35 +176,12 @@ fn handle_keyboard_input(key: pc_keyboard::DecodedKey, buffer: *mut crate::memor
             '^' => print!("^ OwOS <= # "),
             '`' => print!("`"),
             _ => unsafe {
+                if character == ' ' {
+                    character = '_';
+                }
                 print!("{}", character);
                 (*buffer).insert(character);
             }
-            /*
-            '\n' => {
-                match character {
-                    _ => println!("\n[!] OwOS => Invalid input: {}", character)
-                }
-                print!("\nOwOs <= # ")
-            },
-            'h' => {
-                print!("{}\n", character);
-                print!("{}{}{}{}{}",
-                    "Commands:\n",
-                    "  h : Show this help message\n",
-                    "  q : Enter halt loop\n",
-                    "More commands will be supported soon! :3\n",
-                    "\nOwOS <= # "
-                )
-            },
-            'q' => {
-                print!("^System stopped :3");
-                serial_println!("Received system stop command");
-                halt_loop();
-            }
-            _ => {
-                print!("{}\n[!] OwOS => Invalid input: {}\n", character, character);
-                print!("\nOwOS <= # ");
-            }*/
         },
         pc_keyboard::DecodedKey::RawKey(key) => {},
     }
