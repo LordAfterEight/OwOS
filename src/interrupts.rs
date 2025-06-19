@@ -137,33 +137,32 @@ fn handle_keyboard_input(key: pc_keyboard::DecodedKey, buffer: *mut crate::memor
         pc_keyboard::DecodedKey::Unicode(mut character) => match character {
             '\n' => unsafe {
                 unsafe {
-                    println!("\n [i] OwOS:InputBuffer => Building &str...");
+                    //println!("\n [i] OwOS:InputBuffer => Building &str...");
                     let mut buf = [0u8;17];
                     let input: &str = chars_to_str(&(*buffer).content, &mut buf);
-                    for i in 0..(*buffer).content.len() {
+                    /*for i in 0..(*buffer).content.len() {
                         print!("\n [i] OwOS:LineBuffer => {}:{}",
                             (*buffer).content[i],
                             i
                         );
                     }
-                    println!("\n [i] OwOS:LineBuffer => {}", input);
-                    match input {
+                    println!("\n [i] OwOS:LineBuffer => {}", input);*/
+                    match input.trim_end_matches(' ') {
                         "help"  => {
-                            print!("{}\n", input);
-                            print!("{}{}{}{}",
-                                "Commands:\n",
-                                "  h : Show this help message\n",
-                                "  q : Enter halt loop\n",
-                                "More commands will be supported soon! :3\n"
+                            print!("\n{}{}{}{}",
+                                " Commands:\n",
+                                "   help : Show this help message\n",
+                                "   quit : Enter halt loop\n",
+                                " More commands will be supported soon! :3\n"
                             )
                         },
                         "quit" => {
-                            print!("^System stopped :3");
+                            print!("^ System stopped :3");
                             serial_println!("Received system stop command");
                             halt_loop();
                         }
                         _ => {
-                            print!("\n [!] OwOS => Invalid input: {}\n", input);
+                            //print!("\n [!] OwOS => Invalid input: {}\n", input);
                         }
                     }
                     for i in 0..(*buffer).content.len() {
