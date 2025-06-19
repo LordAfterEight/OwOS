@@ -23,10 +23,15 @@ fn kernel_main() -> ! {
 fn memory_check(boot_info: &'static BootInfo) -> ! {
     use owos::allocator;
     use owos::memory::{self, BootInfoFrameAllocator};
+    use owos::vga_buffer::{ColorCode, COLORS, Color};
 
     owos::init();
 
-    println!("^ [i] OwOS => Welcome to OwOS v{} :3\n ", env!("CARGO_PKG_VERSION"));
+    unsafe {
+        COLORS = ColorCode::new(Color::Green, Color::Black);
+        println!("^ [i] OwOS => Welcome to OwOS v{} :3\n ", env!("CARGO_PKG_VERSION"));
+    }
+    unsafe {COLORS = ColorCode::new(Color::White, Color::Black);}
     serial_println!("Booted kernel");
 
     let phys_mem_offset = x86_64::VirtAddr::new(boot_info.physical_memory_offset);
