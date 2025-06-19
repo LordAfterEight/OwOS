@@ -139,17 +139,17 @@ fn handle_keyboard_input(key: pc_keyboard::DecodedKey, buffer: *mut crate::memor
                 unsafe {
                     println!("\n [i] OwOS:InputBuffer => Building &str...");
                     let mut buf = [0u8;17];
-                    let x: &str = chars_to_str(&(*buffer).content, &mut buf);
+                    let input: &str = chars_to_str(&(*buffer).content, &mut buf);
                     for i in 0..(*buffer).content.len() {
                         print!("\n [i] OwOS:LineBuffer => {}:{}",
                             (*buffer).content[i],
                             i
                         );
                     }
-                    println!("\n [i] OwOS:LineBuffer => {}", x);
-                    match x {
+                    println!("\n [i] OwOS:LineBuffer => {}", input);
+                    match input {
                         "help"  => {
-                            print!("{}\n", character);
+                            print!("{}\n", input);
                             print!("{}{}{}{}",
                                 "Commands:\n",
                                 "  h : Show this help message\n",
@@ -163,7 +163,7 @@ fn handle_keyboard_input(key: pc_keyboard::DecodedKey, buffer: *mut crate::memor
                             halt_loop();
                         }
                         _ => {
-                            print!("{}\n [!] OwOS => Invalid input: {}\n", character, character);
+                            print!("\n [!] OwOS => Invalid input: {}\n", input);
                         }
                     }
                     for i in 0..(*buffer).content.len() {
