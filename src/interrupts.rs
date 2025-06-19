@@ -14,6 +14,7 @@ use pic8259::ChainedPics;
 use lazy_static::lazy_static;
 use x86_64::structures::idt::PageFaultErrorCode;
 use crate::halt_loop;
+use crate::InputBuffer;
 
 pub const PIC_1_OFFSET: u8 = 32;
 pub const PIC_2_OFFSET: u8 = PIC_1_OFFSET + 8;
@@ -135,11 +136,19 @@ fn handle_keyboard_input(key: pc_keyboard::DecodedKey, buffer: *mut crate::memor
     match key {
         pc_keyboard::DecodedKey::Unicode(character) => match character {
             '\n' => unsafe {
-                (*buffer).index = 0;
                 unsafe {
-                    let x: &str = "";
+                    println!("\n [i] OwOS:InputBuffer => Building &str...");
+                    let mut buf = [0u8;17];
+                    let x: &str = chars_to_str(&(*buffer).content, &mut buf);
+                    for i in 0..(*buffer).content.len() {
+                        print!("\n [i] OwOS:LineBuffer => {}:{}",
+                            (*buffer).content[i],
+                            i
+                        );
+                    }
+                    println!("\n [i] OwOS:LineBuffer => {}", x);
                     match x {
-                        "help" => {
+                        "help"  => {
                             print!("{}\n", character);
                             print!("{}{}{}{}",
                                 "Commands:\n",
@@ -156,6 +165,9 @@ fn handle_keyboard_input(key: pc_keyboard::DecodedKey, buffer: *mut crate::memor
                         _ => {
                             print!("{}\n [!] OwOS => Invalid input: {}\n", character, character);
                         }
+                    }
+                    for i in 0..(*buffer).content.len() {
+                        (*buffer).content[i] = ' ';
                     }
                 }
                 (*buffer).index = 0;
@@ -196,4 +208,48 @@ fn handle_keyboard_input(key: pc_keyboard::DecodedKey, buffer: *mut crate::memor
         },
         pc_keyboard::DecodedKey::RawKey(key) => {},
     }
+}
+
+use core::str;
+use crate::interrupts::alloc::string::ToString;
+
+/*fn build_str_from_chars<'a>(input: &[char; 17], output: &'a mut [u8]) -> &'a str {
+    let mut len = 0;
+    for (i, c) in input.iter().enumerate() {
+        if let Some(byte) = (*c).to_string().as_bytes().first() {
+            output[i] = *byte;
+            len += 1;
+        }
+    }
+    unsafe { core::str::from_utf8_unchecked(&output[..len]) }
+}*/
+
+fn build_str_from_chars(input: &[char; 17]) -> &'static str {
+    let mut len = 0;
+    unsafe {
+        for (i, c) in input.iter().enumerate() {
+            if let Some(byte) = (*c).to_string().as_bytes().first() {
+                crate::memory::INPUT_BUFFER[i] = *byte;
+                len += 1;
+            }
+        }
+        core::str::from_utf8_unchecked(&crate::memory::INPUT_BUFFER[..len])
+    }
+}
+
+fn chars_to_str<'a>(chars: &[char], output: &'a mut [u8]) -> &'a str {
+    let mut pos = 0;
+
+    for &ch in chars {
+        let mut buf = [0u8; 4];
+        let encoded = ch.encode_utf8(&mut buf);
+        let bytes = encoded.as_bytes();
+        let len = bytes.len();
+
+        output[pos..pos + len].copy_from_slice(bytes);
+        pos += len;
+    }
+
+    // SAFETY: We only wrote valid UTF-8
+    unsafe { core::str::from_utf8_unchecked(&output[..pos]) }
 }

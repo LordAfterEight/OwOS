@@ -124,6 +124,8 @@ pub unsafe fn raw_read(address: u16) -> u8 {
     return x
 }
 
+pub static mut INPUT_BUFFER: [u8;17] = [0u8;17];
+
 pub struct InputBuffer {
     pub content: [char;17],
     pub index: usize

@@ -47,6 +47,6 @@ fn memory_check(boot_info: &'static BootInfo) -> ! {
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    println!(" [X] Kernel@OwOS => {}", info);
+    println!("\n [X] OwOS:Kernel => {}", info);
     kernel_main()
 }

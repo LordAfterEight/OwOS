@@ -24,6 +24,9 @@
 #![feature(slice_ptr_get)]
 #![feature(iter_macro)]
 
+#![allow(unused_imports)]
+#![allow(unused_variables)]
+
 pub mod serial;
 pub mod vga_buffer;
 pub mod interrupts;
