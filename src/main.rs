@@ -1,11 +1,39 @@
 #![no_std]
 #![no_main]
+#![feature(abi_x86_interrupt)]
+#![feature(custom_test_frameworks)]
+#![feature(fmt_internals)]
+#![feature(allocator_api)]
+#![feature(const_eval_select)]
+#![feature(core_intrinsics)]
+#![feature(rustc_attrs)]
+#![feature(ptr_internals)]
+#![feature(trusted_len)]
+#![feature(slice_range)]
+#![feature(extend_one_unchecked)]
+#![feature(extend_one)]
+#![feature(deref_pure_trait)]
+#![feature(sized_type_properties)]
+#![feature(min_specialization)]
+#![feature(ptr_alignment_type)]
+#![feature(temporary_niche_types)]
+#![feature(nonnull_provenance)]
+#![feature(alloc_layout_extra)]
+#![feature(std_internals)]
+#![feature(slice_ptr_get)]
+#![feature(iter_macro)]
+#![cfg_attr(test, no_main)]
+#![allow(internal_features)]
+#![allow(unused_imports)]
+#![allow(unused_variables)]
+#![allow(static_mut_refs)]
 
 extern crate alloc;
 
+pub mod kernel;
+
 use core::panic::PanicInfo;
 use bootloader::{BootInfo, entry_point};
-mod kernel;
 
 entry_point!(memory_check);
 
@@ -14,20 +42,20 @@ fn kernel_main() -> ! {
 
     print!("\nOwOS <= # ");
 
-    owos::halt_loop();
+    halt_loop();
 }
 
 #[unsafe(no_mangle)]
 fn memory_check(boot_info: &'static BootInfo) -> ! {
-    use owos::kernel::allocator;
-    use owos::kernel::memory::{self, BootInfoFrameAllocator};
-    use owos::kernel::vga_buffer::{ColorCode, COLORS, Color};
+    use kernel::allocator;
+    use kernel::memory::{self, BootInfoFrameAllocator};
+    use kernel::vga_buffer::{ColorCode, COLORS, Color};
     use alloc::{boxed::Box, vec, vec::Vec, rc::Rc};
 
-    owos::init();
+    init();
 
     unsafe {
-        COLORS = ColorCode::new(Color::Green, Color::Black);
+        COLORS = ColorCode::new(Color::LightBlue, Color::Black);
         println!("^ [i] OwOS => Welcome to OwOS v{} :3\n ", env!("CARGO_PKG_VERSION"));
     }
     unsafe {COLORS = ColorCode::new(Color::White, Color::Black);}
@@ -70,4 +98,33 @@ fn memory_check(boot_info: &'static BootInfo) -> ! {
 fn panic(info: &PanicInfo) -> ! {
     println!("\n[X] OwOS:Kernel => {}", info);
     kernel_main()
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(u32)]
+pub enum QemuExitCode {
+    Success = 0x10,
+    Failed = 0x11,
+}
+
+pub fn init() {
+    kernel::interrupts::init_idt();
+    kernel::gdt::init();
+    unsafe { kernel::interrupts::PICS.lock().initialize() };
+    x86_64::instructions::interrupts::enable();
+}
+
+pub fn exit_qemu(exit_code: QemuExitCode) {
+    use x86_64::instructions::port::Port;
+
+    unsafe {
+        let mut port = Port::new(0xf4);
+        port.write(exit_code as u32);
+    }
+}
+
+pub fn halt_loop() -> ! {
+    loop {
+        x86_64::instructions::hlt();
+    }
 }

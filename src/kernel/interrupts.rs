@@ -14,7 +14,8 @@ use pic8259::ChainedPics;
 use lazy_static::lazy_static;
 use x86_64::structures::idt::PageFaultErrorCode;
 use crate::halt_loop;
-use crate::InputBuffer;
+use crate::kernel::memory::InputBuffer;
+use crate::kernel::vga_buffer::{COLORS, ColorCode, Color};
 use bootloader::{entry_point, BootInfo};
 
 pub const PIC_1_OFFSET: u8 = 32;
@@ -234,7 +235,8 @@ fn handle_keyboard_input(key: pc_keyboard::DecodedKey, buffer: *mut crate::kerne
                         }
                     },
                     "os" => {
-                        print!("\n[i] OwOS:os => OwOS v{} | Build date: 19.06.2025 | Dev Build", env!("CARGO_PKG_VERSION"));
+                        unsafe {COLORS = ColorCode::new(Color::Cyan, Color::Black);}
+                        print!("\n[i] OwOS:os => OwOS v{} | Build date: 20.06.2025 | Dev Build", env!("CARGO_PKG_VERSION"));
                     }
                     "" => {},
                     _ => {
@@ -245,6 +247,7 @@ fn handle_keyboard_input(key: pc_keyboard::DecodedKey, buffer: *mut crate::kerne
                     (*buffer).content[i] = ' ';
                 }
                 (*buffer).index = 0;
+                unsafe {COLORS = ColorCode::new(Color::White, Color::Black);}
                 print!("\nOwOS <= # ");
             }
             '^' => print!("^OwOS <= # "),
