@@ -41,8 +41,7 @@ entry_point!(memory_check);
 fn kernel_main() -> ! {
 
     print!("\nOwOS <= # ");
-
-    halt_loop();
+    loop {}
 }
 
 #[unsafe(no_mangle)]
@@ -96,8 +95,9 @@ fn memory_check(boot_info: &'static BootInfo) -> ! {
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    println!("\n[X] OwOS:Kernel => {}", info);
-    kernel_main()
+    println!("\n[X] OwOS:kernel => {}", info);
+    println!("[i] OwOS:kernel => Please restart the computer");
+    halt_loop()
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

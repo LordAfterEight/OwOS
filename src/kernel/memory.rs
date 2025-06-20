@@ -11,6 +11,7 @@ use bootloader::bootinfo::MemoryRegionType;
 use crate::kernel::vga_buffer;
 use crate::serial_print;
 use crate::{println, print};
+use crate::kernel::vga_buffer::{COLORS, ColorCode, Color};
 
 
 pub unsafe fn translate_addr(addr: VirtAddr, physical_memory_offset: VirtAddr)
@@ -151,5 +152,4 @@ impl InputBuffer {
 
 
 pub fn memcheck() {
-    print!("\n[i] OwOS:memcheck => Not yet implemented!\n");
 }
