@@ -152,4 +152,5 @@ impl InputBuffer {
 
 
 pub fn memcheck() {
+    print!("\n[i] OwOS:memcheck => Not yet implemented!\n");
 }
