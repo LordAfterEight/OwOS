@@ -55,7 +55,8 @@ fn memory_check(boot_info: &'static BootInfo) -> ! {
 
     unsafe {
         COLORS = ColorCode::new(Color::LightBlue, Color::Black);
-        println!("^ [i] OwOS => Welcome to OwOS v{} :3\n ", env!("CARGO_PKG_VERSION"));
+        println!("^ [i] OwOS => Welcome to OwOS v{} :3\n", env!("CARGO_PKG_VERSION"));
+        println!("[i] OwOS => If you need help, type 'help' :3\n");
     }
     unsafe {COLORS = ColorCode::new(Color::White, Color::Black);}
     serial_println!("Booted kernel");
