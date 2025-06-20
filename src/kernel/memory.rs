@@ -8,6 +8,7 @@ use core::alloc::{Layout, AllocError};
 use core::ptr::NonNull;
 use bootloader::bootinfo::MemoryMap;
 use bootloader::bootinfo::MemoryRegionType;
+use crate::kernel::vga_buffer;
 use crate::serial_print;
 use crate::{println, print};
 

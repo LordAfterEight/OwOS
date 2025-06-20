@@ -2,8 +2,8 @@ extern crate alloc;
 
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
 use crate::println;
-use crate::gdt;
-use crate::memory;
+use crate::kernel::gdt;
+use crate::kernel::memory;
 use crate::print;
 use crate::serial_println;
 //use crate::format;
@@ -65,7 +65,6 @@ pub fn init_idt() {
     IDT.load();
 }
 
-
 extern "x86-interrupt" fn breakpoint_handler(stack_frame: InterruptStackFrame) {
     println!("EXCEPTION: BREAKPOINT\n{:#?}", stack_frame);
 }
@@ -113,7 +112,7 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(
             let scancode: u8 = port.read();
             if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
                 if let Some(key) = keyboard.process_keyevent(key_event) {
-                    let in_buffer = crate::memory::InputBuffer {
+                    let in_buffer = crate::kernel::memory::InputBuffer {
                         content: [' ';17],
                         index: 0
                     };
@@ -135,7 +134,7 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(
             let scancode: u8 = port.read();
             if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
                 if let Some(key) = keyboard.process_keyevent(key_event) {
-                    let in_buffer = crate::memory::InputBuffer {
+                    let in_buffer = crate::kernel::memory::InputBuffer {
                         content: [' ';17],
                         index: 0
                     };
@@ -158,7 +157,7 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(
             let scancode: u8 = port.read();
             if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
                 if let Some(key) = keyboard.process_keyevent(key_event) {
-                    let in_buffer = crate::memory::InputBuffer {
+                    let in_buffer = crate::kernel::memory::InputBuffer {
                         content: [' ';17],
                         index: 0
                     };
@@ -178,7 +177,7 @@ static mut INPUT_BUFFER: memory::InputBuffer = memory::InputBuffer {
     index: 0
 };
 
-fn handle_keyboard_input(key: pc_keyboard::DecodedKey, buffer: *mut crate::memory::InputBuffer) {
+fn handle_keyboard_input(key: pc_keyboard::DecodedKey, buffer: *mut crate::kernel::memory::InputBuffer) {
     match key {
         pc_keyboard::DecodedKey::Unicode(character) => match character {
             '\n' => unsafe {

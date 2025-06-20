@@ -1,7 +1,7 @@
-#![feature(abi_x86_interrupt)]
 #![no_std]
 #![cfg_attr(test, no_main)]
 #![allow(internal_features)]
+#![feature(abi_x86_interrupt)]
 #![feature(custom_test_frameworks)]
 #![feature(fmt_internals)]
 #![feature(allocator_api)]
@@ -28,17 +28,8 @@
 #![allow(unused_variables)]
 #![allow(static_mut_refs)]
 
-pub mod serial;
-pub mod vga_buffer;
-pub mod interrupts;
-pub mod gdt;
-pub mod memory;
-pub mod allocator;
-/*
-pub mod string;
-pub mod vec;
-pub mod raw_vec;
-*/
+
+pub mod kernel;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u32)]
@@ -48,9 +39,9 @@ pub enum QemuExitCode {
 }
 
 pub fn init() {
-    interrupts::init_idt();
-    gdt::init();
-    unsafe { interrupts::PICS.lock().initialize() };
+    kernel::interrupts::init_idt();
+    kernel::gdt::init();
+    unsafe { kernel::interrupts::PICS.lock().initialize() };
     x86_64::instructions::interrupts::enable();
 }
 

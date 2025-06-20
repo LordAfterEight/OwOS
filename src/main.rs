@@ -5,8 +5,7 @@ extern crate alloc;
 
 use core::panic::PanicInfo;
 use bootloader::{BootInfo, entry_point};
-mod vga_buffer;
-mod serial;
+mod kernel;
 
 entry_point!(memory_check);
 
@@ -20,9 +19,9 @@ fn kernel_main() -> ! {
 
 #[unsafe(no_mangle)]
 fn memory_check(boot_info: &'static BootInfo) -> ! {
-    use owos::allocator;
-    use owos::memory::{self, BootInfoFrameAllocator};
-    use owos::vga_buffer::{ColorCode, COLORS, Color};
+    use owos::kernel::allocator;
+    use owos::kernel::memory::{self, BootInfoFrameAllocator};
+    use owos::kernel::vga_buffer::{ColorCode, COLORS, Color};
     use alloc::{boxed::Box, vec, vec::Vec, rc::Rc};
 
     owos::init();
