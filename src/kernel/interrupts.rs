@@ -16,7 +16,6 @@ use x86_64::structures::idt::PageFaultErrorCode;
 use crate::halt_loop;
 use crate::kernel::memory::InputBuffer;
 use crate::kernel::vga_buffer::{COLORS, ColorCode, Color};
-use bootloader::{entry_point, BootInfo};
 
 pub const PIC_1_OFFSET: u8 = 32;
 pub const PIC_2_OFFSET: u8 = PIC_1_OFFSET + 8;

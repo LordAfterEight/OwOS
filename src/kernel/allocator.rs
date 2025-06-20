@@ -13,7 +13,6 @@ pub mod bump;
 
 pub struct Dummy;
 
-#[global_allocator]
 static ALLOCATOR: Locked<BumpAllocator> = Locked::new(BumpAllocator::new());
 
 pub const HEAP_START: usize = 0x_4444_4444_0000;
