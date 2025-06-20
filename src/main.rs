@@ -5,8 +5,10 @@
 use crate::kernel::kernel::Kernel;
 use uefi::prelude::*;
 use uefi::helpers;
+use core::panic::PanicInfo;
 
 mod kernel;
+mod os;
 
 
 #[entry]
