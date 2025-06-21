@@ -1,30 +1,47 @@
 #![allow(dead_code)]
 
-use uefi::prelude::*;
-use core::fmt::Write;
+use core::ptr::NonNull;
 
-/// Represents the core of the operating system.
-pub struct Kernel<'a> { 
-    system_table: &'a mut SystemTable<Boot>,
+use uefi::println;
+use uefi_raw::table::system::SystemTable;
+use uefi::Handle;
+
+
+pub struct Kernel {
+    system_table: SystemTable,
+    handler: Handle
 }
 
-impl<'a> Kernel<'a> {
+impl Kernel {
 
-    /// Creates a new instance of the Kernel.
-    pub fn new(system_table: &'a mut SystemTable<Boot>) -> Self {
-        Kernel { 
-            system_table: system_table,
+    /// Creates a new instance of a kernel
+    pub fn new() -> Self {
+        let ptr = 0xFFFF0000 as *mut _;
+        unsafe {
+            Kernel {
+                system_table: SystemTable::default(),
+                handler: Handle::new(NonNull::new(ptr).unwrap())
+            }
         }
     }
 
-    /// Starts the kernel execution loop.
-    /// It initializes the display and enters an infinite loop.
-    pub fn run(&mut self) -> ! {
-        // Prints "Hello World" 
-        self.system_table.stdout().reset(false).unwrap();
-        writeln!(self.system_table.stdout(), "[i] OwOS => Welcome to OwOS v0.3.1 :3").unwrap();
-        
+    /*
+    /// Pauses the kernel for a given time in milliseconds
+    pub fn pause(&mut self, time: usize) {
+        self.system_table.boot_services.stall(time*1000);
+    }
+    */
 
+    pub fn screen_info(&mut self) {
+    }
+
+    /// Clears the screen
+    pub fn clear_screen(&mut self) {
+    }
+
+    /// Executes the kernel code
+    pub fn run(&mut self) -> ! {
+        println!("[i] OwOS => Welcome to OwOS v{} :3", env!("CARGO_PKG_VERSION"));
         loop {}
     }
 }

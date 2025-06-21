@@ -4,12 +4,10 @@ version = "0.3.1"
 edition = "2024"
 
 [dependencies]
-embedded-graphics = "0.8.1"
 log = "0.4"
 pc-keyboard = "0.8.0"
-uefi = { version = "0.28.0", features = ["alloc"] }
-uefi-graphics2 = "0.3.0"
-uefi-services = "0.25.0"
+uefi = "0.35.0"
+uefi-raw = "0.11.0"
 
 [profile.dev]
 panic = "abort"

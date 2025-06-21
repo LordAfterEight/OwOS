@@ -4,22 +4,25 @@
 
 use crate::kernel::kernel::Kernel;
 use uefi::prelude::*;
-use uefi::helpers;
-use core::panic::PanicInfo;
+
+use core::panic;
 
 mod kernel;
 mod os;
 
 
 #[entry]
-fn efi_main(handler: Handle, mut system_table: SystemTable<Boot>) -> Status {
-    helpers::init(&mut system_table).unwrap();
+fn main() -> Status {
+    uefi::helpers::init().unwrap();
 
-
-    let mut kernel = Kernel::new(&mut system_table);
+    let mut kernel = Kernel::new();
     kernel.run();
-
 
     #[allow(unreachable_code)]
     return Status::SUCCESS;
+}
+
+#[panic_handler]
+fn panic(info: &core::panic::PanicInfo) -> ! {
+    panic!("{}", info);
 }
