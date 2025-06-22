@@ -3,6 +3,11 @@
 use crate::os;
 
 use uefi::println;
+use alloc::format;
+use uefi::proto::pi::mp;
+use uefi::proto::console::text::{Input, Key, ScanCode};
+use embedded_graphics::pixelcolor::Rgb888;
+use embedded_graphics::pixelcolor::WebColors;
 
 
 pub struct Kernel {
@@ -22,11 +27,15 @@ impl Kernel {
     }
     */
 
-    pub fn screen_info(&mut self) {
-    }
-
-    /// Clears the screen
-    pub fn clear_screen(&mut self) {
+    pub fn os_info(&mut self, display: &mut os::display::Display) {
+        let (resx,resy) = display.resolution;
+        let os_info = format!(
+            "[i] OwOS:display => Resolution: {}x{} | {}",
+            resx,
+            resy,
+            format!("{} v{}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"))
+        );
+        display.println(&os_info as &str);
     }
 
     /// Pauses for a given time in milliseconds
@@ -37,9 +46,26 @@ impl Kernel {
 
     /// Executes the kernel code
     pub fn run(&mut self) -> ! {
+        uefi::boot::set_watchdog_timer(0, 0x10000, None).unwrap();
+
         println!("[i] OwOS:kernel => Booting OwOS v{}...\n", env!("CARGO_PKG_VERSION"));
-        self.pause(3000);
-        os::display::draw(self);
+
+        let mut display = os::display::Display::new();
+        let (resx,resy) = display.resolution;
+        let end = resx - 100;
+
+        display.clear(Rgb888::CSS_BLACK);
+
+        for i in 0..255 {
+            display.color = Rgb888::new(i,i,i);
+            display.print_title("[i] OwOS:os => Welcome to OwOS! :3");
+        }
+
+        display.cursor_y += 20;
+        self.os_info(&mut display);
+
+        display.print("OwOS <= # ");
+
         loop {}
     }
 }

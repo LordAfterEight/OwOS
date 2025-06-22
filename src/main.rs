@@ -7,8 +7,6 @@ use crate::kernel::kernel::Kernel;
 use uefi::prelude::*;
 use uefi::allocator::Allocator;
 
-use core::panic;
-
 mod kernel;
 mod os;
 
