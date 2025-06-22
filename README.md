@@ -1,4 +1,6 @@
-# OwOS
+# OwOS DEPRECATED
+**This is the old BIOS build and will probably not be developed further as I've switched to UEFI.**
+
 A small operating system written in Rust for funsies. It will run on any potato that has the x86_64 cpu architecture
 
 ### Booting OwOS on actual hardware
