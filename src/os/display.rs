@@ -15,7 +15,7 @@ pub struct Display {
     pub cursor_x: i32,
     pub mode: uefi::proto::console::gop::ModeInfo,
     display: UefiDisplay,
-    pub color: Rgb888,
+    pub colors: crate::os::colorlib::Colors,
     pub resolution: (usize,usize)
 }
 
@@ -39,7 +39,7 @@ impl Display {
             cursor_x: 10,
             mode: gopr.current_mode_info(),
             display: UefiDisplay::new(gopr.frame_buffer(), mode),
-            color: Rgb888::CSS_WHITE,
+            colors: crate::os::colorlib::Colors::init(),
             resolution: mode.resolution()
         }
     }
@@ -69,7 +69,7 @@ impl Display {
         let title = Text::new(
             title_text,
             Point { x: ((resx / 2) - (title_text.len()*5) -15) as i32, y: self.cursor_y },
-            MonoTextStyle::new(&FONT_10X20, self.color)
+            MonoTextStyle::new(&FONT_10X20, self.colors.fg_header)
         );
         _ = title.draw(&mut self.display as &mut _);
         self.display.flush();
@@ -80,18 +80,28 @@ impl Display {
         let text = Text::new(
             &x as &str,
             Point {x: self.cursor_x, y: self.cursor_y},
-            MonoTextStyle::new(&FONT_7X14, self.color)
+            MonoTextStyle::new(&FONT_7X14, self.colors.fg)
         );
         _ = text.draw(&mut self.display as &mut _);
         self.display.flush();
         self.cursor_x += (x.len() as i32 * 7) +1;
     }
 
+    pub fn print_at_position(&mut self, x: &str, pos_x: i32, pos_y: i32) {
+        let text = Text::new(
+            &x as &str,
+            Point {x: pos_x, y: pos_y},
+            MonoTextStyle::new(&FONT_7X14, self.colors.fg)
+        );
+        _ = text.draw(&mut self.display as &mut _);
+        self.display.flush();
+    }
+
     pub fn println(&mut self, text: &str) {
         let text = Text::new(
             &text as &str,
             Point {x: 10, y: self.cursor_y},
-            MonoTextStyle::new(&FONT_7X14, self.color)
+            MonoTextStyle::new(&FONT_7X14, self.colors.fg)
         );
         _ = text.draw(&mut self.display as &mut _);
         self.display.flush();

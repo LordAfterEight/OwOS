@@ -53,18 +53,33 @@ impl Kernel {
         let mut display = os::display::Display::new();
         let (resx,resy) = display.resolution;
         let end = resx - 100;
+        let version = format!("v{}", env!("CARGO_PKG_VERSION"));
 
-        display.clear(Rgb888::CSS_BLACK);
+        self.pause(500);
 
-        for i in 0..255 {
-            display.color = Rgb888::new(i,i,i);
+        display.print_at_position("OwOS", (resx/2-14) as i32, (resy/2) as i32);
+        display.draw_rect(100,(resy/2+20) as i32, (resx-200) as u32, 5, display.colors.bg_header);
+
+        for i in 0..resx-200 {
+            display.draw_rect((100+i) as i32,(resy/2+20) as i32, 1, 5, Rgb888::new(255,(255-i/7) as u8,255));
+        }
+
+        self.pause(500);
+        display.clear(display.colors.bg);
+        display.draw_rect(0,0,resx as u32,35,Rgb888::new(15,15,15));
+        display.draw_rect(0,35,resx as u32,(resy-35) as u32,Rgb888::new(5,5,5));
+
+        display.print_at_position(&version, (resx-50) as i32, (resy-10) as i32);
+
+        for i in 15..200 {
+            display.colors.fg_header = Rgb888::new(i,i/2,i);
             display.print_title("[i] OwOS:os => Welcome to OwOS! :3");
         }
 
-        display.cursor_y += 20;
+        display.cursor_y += 30;
         self.os_info(&mut display);
 
-        display.print("OwOS <= # ");
+        display.print("    OwOS <= # ");
 
         loop {}
     }
