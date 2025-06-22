@@ -9,7 +9,7 @@ To boot this on actual hardware, write the .bin file to a USB-stick using a prog
 This build is known to randomly panic. In case that happens, simply hit the restart button of your pc and then it should work. If not, rinse and repeat lol
 
 ### Booting OwOS in QEMU
-To boot OwOS in qemu, download the .bin file. Put it whereever you want and navigate to it in your terminal. Then enter the following command:
+To boot OwOS in qemu, download the .bin file from the v0.2.2 release. Put it whereever you want and navigate to it in your terminal. Then enter the following command:
 
 ```bash
 qemu-system-x86_64 --drive format=raw,file=bootimage-owos-[version].bin
