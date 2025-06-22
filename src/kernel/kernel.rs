@@ -1,28 +1,18 @@
 #![allow(dead_code)]
 
-use core::ptr::NonNull;
+use crate::os;
 
 use uefi::println;
-use uefi_raw::table::system::SystemTable;
-use uefi::Handle;
 
 
 pub struct Kernel {
-    system_table: SystemTable,
-    handler: Handle
 }
 
 impl Kernel {
 
     /// Creates a new instance of a kernel
     pub fn new() -> Self {
-        let ptr = 0xFFFF0000 as *mut _;
-        unsafe {
-            Kernel {
-                system_table: SystemTable::default(),
-                handler: Handle::new(NonNull::new(ptr).unwrap())
-            }
-        }
+        Kernel {}
     }
 
     /*
@@ -39,9 +29,22 @@ impl Kernel {
     pub fn clear_screen(&mut self) {
     }
 
+    /// Pauses for a given time in milliseconds
+    pub fn pause(&mut self, time: usize) {
+        uefi::boot::stall(time * 1000);
+    }
+
+
     /// Executes the kernel code
     pub fn run(&mut self) -> ! {
-        println!("[i] OwOS => Welcome to OwOS v{} :3", env!("CARGO_PKG_VERSION"));
+        println!("[i] OwOS => Welcome to OwOS v{} :3\n", env!("CARGO_PKG_VERSION"));
+        self.pause(3000);
+        os::display::draw(self);
         loop {}
     }
+}
+
+
+pub fn shutdown() {
+    uefi::runtime::reset(uefi::runtime::ResetType::SHUTDOWN, uefi::Status::SUCCESS, None);
 }
