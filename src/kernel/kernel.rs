@@ -37,7 +37,7 @@ impl Kernel {
 
     /// Executes the kernel code
     pub fn run(&mut self) -> ! {
-        println!("[i] OwOS => Welcome to OwOS v{} :3\n", env!("CARGO_PKG_VERSION"));
+        println!("[i] OwOS:kernel => Booting OwOS v{}...\n", env!("CARGO_PKG_VERSION"));
         self.pause(3000);
         os::display::draw(self);
         loop {}

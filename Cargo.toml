@@ -1,10 +1,11 @@
 [package]
-name = "owos"
-version = "0.3.4"
+name = "OwOS"
+version = "0.4.0"
 edition = "2024"
 
 [dependencies]
 embedded-graphics = "0.8.1"
+linked_list_allocator = "0.10.5"
 log = "0.4"
 pc-keyboard = "0.8.0"
 uefi = "0.35.0"
