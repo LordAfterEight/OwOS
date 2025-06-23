@@ -60,8 +60,8 @@ impl Kernel {
         display.print_at_position("OwOS", (resx/2-14) as i32, (resy/2) as i32);
         display.draw_rect(100,(resy/2+20) as i32, (resx-200) as u32, 5, display.colors.bg_header);
 
-        for i in 0..resx-200 {
-            display.draw_rect((100+i) as i32,(resy/2+20) as i32, 1, 5, Rgb888::new(255,(255-i/7) as u8,255));
+        for i in 0..(resx-200)/2 {
+            display.draw_rect((100+i*2) as i32,(resy/2+20) as i32, 2, 5, Rgb888::new(255,(255-i/7) as u8,255));
         }
 
         self.pause(500);

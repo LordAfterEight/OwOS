@@ -38,7 +38,7 @@ impl Display {
             cursor_y: 25,
             cursor_x: 10,
             mode: gopr.current_mode_info(),
-            display: UefiDisplay::new(gopr.frame_buffer(), mode),
+            display: UefiDisplay::new(gopr.frame_buffer(), mode).unwrap(),
             colors: crate::os::colorlib::Colors::init(),
             resolution: mode.resolution()
         }
