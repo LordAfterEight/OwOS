@@ -1,5 +1,6 @@
 #![no_std]
 #![no_main]
+#![feature(ptr_as_uninit)]
 
 extern crate alloc;
 

@@ -66,13 +66,13 @@ impl Kernel {
 
         self.pause(500);
         display.clear(display.colors.bg);
-        display.draw_rect(0,0,resx as u32,35,Rgb888::new(15,15,15));
-        display.draw_rect(0,35,resx as u32,(resy-35) as u32,Rgb888::new(5,5,5));
+        display.draw_rect(0,0,resx as u32,35,display.colors.bg_header);
+        display.draw_rect(0,35,resx as u32,(resy-35) as u32,display.colors.bg);
 
         display.print_at_position(&version, (resx-50) as i32, (resy-10) as i32);
 
-        for i in 15..200 {
-            display.colors.fg_header = Rgb888::new(i,i/2,i);
+        for i in 15..255 {
+            display.colors.fg_header = Rgb888::new(i/4,i/2,i);
             display.print_title("[i] OwOS:os => Welcome to OwOS! :3");
         }
 
