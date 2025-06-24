@@ -13,6 +13,7 @@ use uefi_graphics2::UefiDisplay;
 pub struct Display {
     pub cursor_y: i32,
     pub cursor_x: i32,
+    pub text_offset: u8,
     pub mode: uefi::proto::console::gop::ModeInfo,
     display: UefiDisplay,
     pub colors: crate::os::colorlib::Colors,
@@ -37,6 +38,7 @@ impl Display {
         Display {
             cursor_y: 25,
             cursor_x: 10,
+            text_offset: 16,
             mode: gopr.current_mode_info(),
             display: UefiDisplay::new(gopr.frame_buffer(), mode).unwrap(),
             colors: crate::os::colorlib::Colors::init(),
@@ -87,6 +89,17 @@ impl Display {
         self.cursor_x += (x.len() as i32 * 7) +1;
     }
 
+    pub fn print_colored(&mut self, x: &str, color: Rgb888) {
+        let text = Text::new(
+            &x as &str,
+            Point {x: self.cursor_x, y: self.cursor_y},
+            MonoTextStyle::new(&FONT_7X14, color)
+        );
+        _ = text.draw(&mut self.display as &mut _);
+        self.display.flush();
+        self.cursor_x += (x.len() as i32 * 7) +1;
+    }
+
     pub fn print_at_position(&mut self, x: &str, pos_x: i32, pos_y: i32) {
         let text = Text::new(
             &x as &str,
@@ -105,6 +118,11 @@ impl Display {
         );
         _ = text.draw(&mut self.display as &mut _);
         self.display.flush();
+        self.new_line();
+    }
+
+    pub fn new_line(&mut self) {
         self.cursor_y += 16;
+        self.cursor_x = 10;
     }
 }

@@ -79,7 +79,7 @@ impl Kernel {
         display.cursor_y += 30;
         self.os_info(&mut display);
 
-        display.print("    OwOS <= # ");
+        os::input::read_keyboard_events(&mut display);
 
         loop {}
     }
