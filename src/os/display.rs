@@ -15,7 +15,7 @@ pub struct Display {
     pub cursor_x: i32,
     pub text_offset: u8,
     pub mode: uefi::proto::console::gop::ModeInfo,
-    display: UefiDisplay,
+    pub display: UefiDisplay,
     pub colors: crate::os::colorlib::Colors,
     pub resolution: (usize,usize)
 }
@@ -33,16 +33,16 @@ impl Display {
             }
         };
 
-        let mode = gopr.current_mode_info();
+        let mode_info = gopr.current_mode_info();
 
         Display {
-            cursor_y: 25,
+            cursor_y: 23,
             cursor_x: 10,
             text_offset: 16,
             mode: gopr.current_mode_info(),
-            display: UefiDisplay::new(gopr.frame_buffer(), mode).unwrap(),
+            display: UefiDisplay::new(gopr.frame_buffer(), mode_info),
             colors: crate::os::colorlib::Colors::init(),
-            resolution: mode.resolution()
+            resolution: mode_info.resolution()
         }
     }
 

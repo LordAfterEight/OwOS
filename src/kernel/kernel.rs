@@ -4,11 +4,7 @@ use crate::os;
 
 use uefi::println;
 use alloc::format;
-use uefi::proto::pi::mp;
-use uefi::proto::console::text::{Input, Key, ScanCode};
 use embedded_graphics::pixelcolor::Rgb888;
-use embedded_graphics::pixelcolor::WebColors;
-
 
 pub struct Kernel {
 }
@@ -52,7 +48,6 @@ impl Kernel {
 
         let mut display = os::display::Display::new();
         let (resx,resy) = display.resolution;
-        let end = resx - 100;
         let version = format!("v{}", env!("CARGO_PKG_VERSION"));
 
         self.pause(500);
@@ -66,8 +61,9 @@ impl Kernel {
 
         self.pause(500);
         display.clear(display.colors.bg);
-        display.draw_rect(0,0,resx as u32,35,display.colors.bg_header);
-        display.draw_rect(0,35,resx as u32,(resy-35) as u32,display.colors.bg);
+        display.draw_rect(0,0,resx as u32,35,display.colors.bg_header); // Header
+        display.draw_rect(0,35,resx as u32,1,display.colors.classic.grey); // Seperator
+        display.draw_rect(0,36,resx as u32,(resy-36) as u32,display.colors.bg); // Background
 
         display.print_at_position(&version, (resx-50) as i32, (resy-10) as i32);
 
@@ -76,10 +72,9 @@ impl Kernel {
             display.print_title("[i] OwOS:os => Welcome to OwOS! :3");
         }
 
-        display.cursor_y += 30;
+        display.cursor_y += 32;
         self.os_info(&mut display);
-
-        os::input::read_keyboard_events(&mut display);
+        println!("[i] OwOS:kernel => Booted OwOS v{}\n", env!("CARGO_PKG_VERSION"));
 
         loop {}
     }
