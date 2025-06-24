@@ -62,7 +62,7 @@ impl Kernel {
         self.pause(500);
         display.clear(display.colors.bg);
         display.draw_rect(0,0,resx as u32,35,display.colors.bg_header); // Header
-        display.draw_rect(0,35,resx as u32,1,display.colors.classic.grey); // Seperator
+        display.draw_rect(0,35,resx as u32,1,display.colors.classic.dark_grey); // Seperator
         display.draw_rect(0,36,resx as u32,(resy-36) as u32,display.colors.bg); // Background
 
         display.print_at_position(&version, (resx-50) as i32, (resy-10) as i32);

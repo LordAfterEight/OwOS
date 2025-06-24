@@ -13,9 +13,9 @@ impl Colors {
     pub fn init() -> Self {
         Colors {
             fg: Rgb888::new(255,255,255),
-            bg: Rgb888::new(10,10,10),
+            bg: Rgb888::new(7,7,7),
             fg_header: Rgb888::new(255,0,200),
-            bg_header: Rgb888::new(20,20,20),
+            bg_header: Rgb888::new(17,17,17),
             classic: ClassicColors::init()
         }
     }
@@ -29,7 +29,7 @@ pub struct ClassicColors {
     pub red: Rgb888,
     pub yellow: Rgb888,
     pub orange: Rgb888,
-    pub grey: Rgb888,
+    pub dark_grey: Rgb888,
 }
 
 impl ClassicColors {
@@ -42,7 +42,7 @@ impl ClassicColors {
             red: Rgb888::CSS_RED,
             yellow: Rgb888::CSS_YELLOW,
             orange: Rgb888::CSS_ORANGE,
-            grey: Rgb888::new(120,120,120),
+            dark_grey: Rgb888::new(60,60,60),
         }
     }
 }
