@@ -40,7 +40,7 @@ impl Display {
             cursor_x: 10,
             text_offset: 16,
             mode: gopr.current_mode_info(),
-            display: UefiDisplay::new(gopr.frame_buffer(), mode_info),
+            display: UefiDisplay::new(gopr.frame_buffer(), mode_info).unwrap(),
             colors: crate::os::colorlib::Colors::init(),
             resolution: mode_info.resolution()
         }
@@ -75,7 +75,6 @@ impl Display {
         );
         _ = title.draw(&mut self.display as &mut _);
         self.display.flush();
-        //self.cursor_y += 35;
     }
 
     pub fn print(&mut self, x: &str) {
@@ -100,11 +99,11 @@ impl Display {
         self.cursor_x += (x.len() as i32 * 7) +1;
     }
 
-    pub fn print_at_position(&mut self, x: &str, pos_x: i32, pos_y: i32) {
+    pub fn print_at_position(&mut self, x: &str, pos_x: i32, pos_y: i32, color: Rgb888) {
         let text = Text::new(
             &x as &str,
             Point {x: pos_x, y: pos_y},
-            MonoTextStyle::new(&FONT_7X14, self.colors.fg)
+            MonoTextStyle::new(&FONT_7X14, color)
         );
         _ = text.draw(&mut self.display as &mut _);
         self.display.flush();

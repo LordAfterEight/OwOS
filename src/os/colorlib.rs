@@ -15,7 +15,7 @@ impl Colors {
             fg: Rgb888::new(255,255,255),
             bg: Rgb888::new(7,7,7),
             fg_header: Rgb888::new(255,0,200),
-            bg_header: Rgb888::new(17,17,17),
+            bg_header: Rgb888::new(17,17,20),
             classic: ClassicColors::init()
         }
     }
@@ -30,6 +30,8 @@ pub struct ClassicColors {
     pub yellow: Rgb888,
     pub orange: Rgb888,
     pub dark_grey: Rgb888,
+    pub grey: Rgb888,
+    pub light_grey: Rgb888,
 }
 
 impl ClassicColors {
@@ -42,7 +44,9 @@ impl ClassicColors {
             red: Rgb888::CSS_RED,
             yellow: Rgb888::CSS_YELLOW,
             orange: Rgb888::CSS_ORANGE,
-            dark_grey: Rgb888::new(60,60,60),
+            dark_grey: Rgb888::new(50,50,50),
+            grey: Rgb888::new(100,100,100),
+            light_grey: Rgb888::new(150,150,150),
         }
     }
 }
