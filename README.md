@@ -1,5 +1,5 @@
 # OwOS
-A small operating system written in Rust for funsies. It will run on any potato that has the x86_64 cpu architecture
+A micro-OS written in Rust for funsies. It will run on any potato that has the x86_64 cpu architecture
 
 ### Booting OwOS on actual hardware
 1. **Newest version:** Run the ```build_release.sh``` script and copy the ```BOOTX64.EFI``` file from ```target/x86_64-unknown-uefi/release/EFI/BOOT/``` into the ```EFI/BOOT/``` directory on a USB-stick. If that directory doesn't exist, create it.
