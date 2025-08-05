@@ -126,7 +126,7 @@ impl Display {
     }
 
     pub fn new_line(&mut self) {
-        self.cursor_y += 16;
+        self.cursor_y += 18;
         self.cursor_x = 10;
     }
 }

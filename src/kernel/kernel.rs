@@ -8,6 +8,12 @@ use embedded_graphics::pixelcolor::Rgb888;
 use uefi::proto::console::text::{Input, Key, ScanCode};
 use uefi::{boot, Char16, Result, ResultExt};
 
+use uefi::{
+    Handle as UefiHandle,
+    boot::{get_handle_for_protocol, open_protocol_exclusive},
+    proto::console::text::Input as InputProtocol,
+};
+
 pub struct Kernel {
 }
 
@@ -43,7 +49,7 @@ impl Kernel {
 
 
     /// Executes the kernel code
-    pub fn run(&mut self) -> ! {
+    pub fn run(&mut self) -> uefi::Status {
 
         let mut counter = 0;
 
@@ -68,19 +74,30 @@ impl Kernel {
 
         display.cursor_y += 32;
         self.os_info(&mut display);
-        display.print("    OwOS:input   <= ");
         println!("[i] OwOS:kernel => Booted OwOS {}\n", version);
 
+
+        let handle: UefiHandle = get_handle_for_protocol::<InputProtocol>().expect("Failed to get handle for Input Protocol");
+
+        let mut stdin = open_protocol_exclusive::<InputProtocol>(handle).expect("Failed to open Input Protocol");
+
+        // create a key event to wait for
+        let key_event = stdin
+            .wait_for_key_event()
+            .expect("Failed to create key event");
+
+
         let mut cursor = "_";
+        display.print("    OwOS:input   <= ");
 
         loop {
 
-            if counter == 50000000 {
+            if counter == 500000 {
                 display.print(cursor);
                 display.cursor_x -= 8;
             }
 
-            if counter > 100000000 {
+            if counter > 1000000 {
                 counter = 0;
                 display.draw_rect(
                     display.cursor_x as i32,
@@ -90,8 +107,17 @@ impl Kernel {
                 );
             }
 
+            let input = stdin.read_key().expect("Failed to read key");
+            if let Some(key) = input {
+                display.print(&format!("{:?}", key));
+                display.cursor_y += 16;
+                display.cursor_x = 10;
+                display.print("    OwOS:input   <= ");
+            }
+
             counter += 1;
         }
+        return uefi::Status::SUCCESS;
     }
 }
 
