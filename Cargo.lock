@@ -10,13 +10,10 @@ dependencies = [
  "lazy_static",
  "linked_list_allocator",
  "log",
- "pc-keyboard",
- "pic8259",
  "spin 0.10.0",
  "uefi",
  "uefi-graphics2",
  "uefi-raw",
- "x86_64",
 ]
 
 [[package]]
@@ -137,21 +134,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pc-keyboard"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f0ca629cbb3f0d5b699c338f0129ff78c9bfd7ea8b1258ad529bff490dc8ed5a"
-
-[[package]]
-name = "pic8259"
-version = "0.11.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "62d9a86c292b165f757e47e7fd66855def189b2564609bc4203727b27c33db22"
-dependencies = [
- "x86_64",
-]
-
-[[package]]
 name = "proc-macro2"
 version = "1.0.95"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -188,12 +170,6 @@ checksum = "1885c039570dc00dcb4ff087a89e185fd56bae234ddc7f056a945bf36467248d"
 dependencies = [
  "proc-macro2",
 ]
-
-[[package]]
-name = "rustversion"
-version = "1.0.21"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8a0d197bd2c9dc6e53b84da9556a69ba4cdfab8619eb41a8bd1cc2027a0f6b1d"
 
 [[package]]
 name = "scopeguard"
@@ -324,21 +300,3 @@ name = "unicode-ident"
 version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5a5f39404a5da50712a4c1eecf25e90dd62b613502b7e925fd4e4d19b5c96512"
-
-[[package]]
-name = "volatile"
-version = "0.4.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "442887c63f2c839b346c192d047a7c87e73d0689c9157b00b53dcc27dd5ea793"
-
-[[package]]
-name = "x86_64"
-version = "0.15.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f042214de98141e9c8706e8192b73f56494087cc55ebec28ce10f26c5c364ae"
-dependencies = [
- "bit_field",
- "bitflags",
- "rustversion",
- "volatile",
-]

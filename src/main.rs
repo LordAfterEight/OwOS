@@ -1,7 +1,6 @@
 #![no_std]
 #![no_main]
 #![feature(ptr_as_uninit)]
-#![feature(abi_x86_interrupt)]
 #![allow(static_mut_refs)]
 
 extern crate alloc;

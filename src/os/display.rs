@@ -9,8 +9,11 @@ use embedded_graphics::prelude::*;
 use uefi::prelude::*;
 use uefi::proto::console::gop::GraphicsOutput;
 use uefi_graphics2::UefiDisplay;
+use alloc::string::String;
 
 pub struct Display {
+    pub cursor: String,
+    pub cursor_blink: bool,
     pub cursor_y: i32,
     pub cursor_x: i32,
     pub text_offset: u8,
@@ -36,10 +39,12 @@ impl Display {
         let mode_info = gopr.current_mode_info();
 
         Display {
+            cursor: String::from("_"),
+            cursor_blink: true,
             cursor_y: 23,
             cursor_x: 10,
             text_offset: 16,
-            mode: gopr.current_mode_info(),
+            mode: mode_info,
             display: UefiDisplay::new(gopr.frame_buffer(), mode_info).unwrap(),
             colors: crate::os::colorlib::Colors::init(),
             resolution: mode_info.resolution()
@@ -47,7 +52,7 @@ impl Display {
     }
 
     pub fn clear(&mut self, color: Rgb888) {
-        _ = self.display.clear(color);
+        self.display.clear(color).unwrap();
         self.display.flush();
     }
 
@@ -56,11 +61,11 @@ impl Display {
             .fill_color(color)
             .build();
         _ = embedded_graphics::primitives::Rectangle::new(Point::new(x as i32, y as i32),Size::new(w as u32, h as u32))
-            .draw_styled(&style, &mut self.display as &mut _);
+            .draw_styled(&style, &mut self.display);
         self.display.flush();
     }
 
-    pub fn print_title(&mut self, text: &str) {
+    pub fn print_title(&mut self) {
         let title_text = &alloc::format!(
             "Welcome to {} v{}!",
             env!("CARGO_PKG_NAME"),
@@ -73,7 +78,7 @@ impl Display {
             Point { x: ((resx / 2) - (title_text.len()*5) -15) as i32, y: self.cursor_y },
             MonoTextStyle::new(&FONT_10X20, self.colors.fg_header)
         );
-        _ = title.draw(&mut self.display as &mut _);
+        title.draw(&mut self.display).unwrap();
         self.display.flush();
     }
 
@@ -83,7 +88,7 @@ impl Display {
             Point {x: self.cursor_x, y: self.cursor_y},
             MonoTextStyle::new(&FONT_7X14, self.colors.fg)
         );
-        _ = text.draw(&mut self.display as &mut _);
+        text.draw(&mut self.display).unwrap();
         self.display.flush();
         self.cursor_x += (x.len() as i32 * 7) +1;
     }
@@ -94,7 +99,7 @@ impl Display {
             Point {x: self.cursor_x, y: self.cursor_y},
             MonoTextStyle::new(&FONT_7X14, color)
         );
-        _ = text.draw(&mut self.display as &mut _);
+        text.draw(&mut self.display).unwrap();
         self.display.flush();
         self.cursor_x += (x.len() as i32 * 7) +1;
     }
@@ -105,7 +110,7 @@ impl Display {
             Point {x: pos_x, y: pos_y},
             MonoTextStyle::new(&FONT_7X14, color)
         );
-        _ = text.draw(&mut self.display as &mut _);
+        text.draw(&mut self.display).unwrap();
         self.display.flush();
     }
 
@@ -115,7 +120,7 @@ impl Display {
             Point {x: 10, y: self.cursor_y},
             MonoTextStyle::new(&FONT_7X14, self.colors.fg)
         );
-        _ = text.draw(&mut self.display as &mut _);
+        text.draw(&mut self.display).unwrap();
         self.display.flush();
         self.new_line();
     }
