@@ -28,7 +28,8 @@ fn main() -> Status {
 #[panic_handler]
 fn panic(info: &core::panic::PanicInfo) -> ! {
     uefi::println!("[X] OwOS:kernel => Error occured! {}", info);
-    loop {}
+    kernel::kernel::Kernel::new().run();
+    loop {} // Should never reach here
 }
 
 

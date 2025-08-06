@@ -125,8 +125,19 @@ impl Display {
         self.new_line();
     }
 
+    pub fn println_colored(&mut self, text: &str, color: Rgb888) {
+        let text = Text::new(
+            &text as &str,
+            Point {x: 10, y: self.cursor_y},
+            MonoTextStyle::new(&FONT_7X14, color)
+        );
+        text.draw(&mut self.display).unwrap();
+        self.display.flush();
+        self.new_line();
+    }
+
     pub fn new_line(&mut self) {
-        self.cursor_y += 18;
+        self.cursor_y += 16;
         self.cursor_x = 10;
     }
 }

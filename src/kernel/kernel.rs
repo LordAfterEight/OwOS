@@ -1,7 +1,10 @@
 #![allow(dead_code)]
 
+use core::fmt::Debug;
+
 use crate::os::{self, input};
 
+use uefi::boot::ScopedProtocol;
 use uefi::println;
 use alloc::format;
 use embedded_graphics::pixelcolor::Rgb888;
@@ -15,21 +18,17 @@ use uefi::{
 };
 
 pub struct Kernel {
+    stdin: ScopedProtocol<Input>
 }
 
 impl Kernel {
 
     /// Creates a new instance of a kernel
     pub fn new() -> Self {
-        Kernel {}
+        Kernel {
+            stdin: input::init_input_protocol(),
+        }
     }
-
-    /*
-    /// Pauses the kernel for a given time in milliseconds
-    pub fn pause(&mut self, time: usize) {
-        self.system_table.boot_services.stall(time*1000);
-    }
-    */
 
     pub fn os_info(&mut self, display: &mut os::display::Display) {
         let (resx,resy) = display.resolution;
@@ -76,28 +75,20 @@ impl Kernel {
         self.os_info(&mut display);
         println!("[i] OwOS:kernel => Booted OwOS {}\n", version);
 
-
-        let handle: UefiHandle = get_handle_for_protocol::<InputProtocol>().expect("Failed to get handle for Input Protocol");
-
-        let mut stdin = open_protocol_exclusive::<InputProtocol>(handle).expect("Failed to open Input Protocol");
-
-        // create a key event to wait for
-        let key_event = stdin
-            .wait_for_key_event()
-            .expect("Failed to create key event");
-
-
         let mut cursor = "_";
         display.print("    OwOS:input   <= ");
 
+        let mut input_buffer = alloc::string::String::new();
+        let return_key = Char16::try_from('\r').unwrap();
+
         loop {
 
-            if counter == 500000 {
+            if counter == 250_000 {
                 display.print(cursor);
                 display.cursor_x -= 8;
             }
 
-            if counter > 1000000 {
+            if counter > 500_000 {
                 counter = 0;
                 display.draw_rect(
                     display.cursor_x as i32,
@@ -107,12 +98,65 @@ impl Kernel {
                 );
             }
 
-            let input = stdin.read_key().expect("Failed to read key");
-            if let Some(key) = input {
-                display.print(&format!("{:?}", key));
-                display.cursor_y += 16;
-                display.cursor_x = 10;
-                display.print("    OwOS:input   <= ");
+            let input = self.stdin.read_key().expect("Failed to read key");
+            if let Some(Key::Printable(key)) = input {
+                if key == return_key {
+                    display.draw_rect(
+                        display.cursor_x as i32,
+                        display.cursor_y as i32 - 12,
+                        8, 16,
+                        display.colors.classic.black
+                    );
+                    display.new_line();
+                    match input_buffer.as_str() {
+                        "shutdown" => {
+                            display.println("[i] OwOS:kernel => Shutting down...");
+                            self.pause(1000);
+                            shutdown();
+                        },
+                        "reboot" => {
+                            display.println("[i] OwOS:kernel => Rebooting...");
+                            self.pause(1000);
+                            reboot();
+                        },
+                        "clear" => {
+                            display.clear(display.colors.classic.black);
+                            display.cursor_y = 12;
+                            display.cursor_x = 10;
+
+                        },
+                        "help" => {
+                            display.println_colored(
+                                "[i] commands: shutdown, reboot, clear, help, time",
+                                display.colors.classic.yellow
+                            );
+                        },
+                        "time" => {
+                            let time = uefi::runtime::get_time().expect("Failed to get time");
+                            display.println_colored(
+                                &format!("[i] OwOS:time    => {}", time),
+                                display.colors.classic.cyan
+                            );
+                        },
+                        "" => {
+                        },
+                        _ => {
+                            display.println_colored(&format!("[i] Invalid command: {}", input_buffer), display.colors.classic.orange);
+                            input_buffer.clear();
+                        }
+                    }
+                    input_buffer.clear();
+                    display.print("    OwOS:input   <= ");
+                } else {
+                    display.draw_rect(
+                        display.cursor_x as i32,
+                        display.cursor_y as i32 - 12,
+                        8, 16,
+                        display.colors.classic.black
+                    );
+                    display.print(&format!("{}", key));
+                    input_buffer.push(key.into());
+                }
             }
 
             counter += 1;
@@ -124,4 +168,8 @@ impl Kernel {
 
 pub fn shutdown() {
     uefi::runtime::reset(uefi::runtime::ResetType::SHUTDOWN, uefi::Status::SUCCESS, None);
+}
+
+pub fn reboot() {
+    uefi::runtime::reset(uefi::runtime::ResetType::COLD, uefi::Status::SUCCESS, None);
 }
